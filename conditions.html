@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conditions d'utilisation — CVMG</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+  :root {
+    --bleu: #1863F2; --bleu-marine: #0B1F3D; --bleu-clair: #EAF2FF;
+    --orange: #F7941D; --texte: #22262B; --gris-texte: #5B6472; --gris-fond: #F6F7F9;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', Arial, sans-serif; color: var(--texte); line-height: 1.6; }
+  a { color: inherit; }
+  .lien { color: var(--bleu); }
+  .enveloppe { max-width: 1180px; margin: 0 auto; padding: 0 6vw; }
+  main.enveloppe { max-width: 900px; }
+  h1, h2 { font-family: 'Poppins', sans-serif; color: var(--bleu-marine); line-height: 1.2; }
+
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 5mm 0; }
+  .nav-logo { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 15pt; color: var(--bleu-marine); text-decoration: none; }
+  .nav-logo span { color: var(--orange); }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 1.5mm; font-family: inherit;
+    font-weight: 700; font-size: 10.5pt; padding: 3.6mm 7mm; border-radius: 2mm; border: 1.5px solid transparent;
+    cursor: pointer; text-decoration: none; white-space: nowrap; transition: background .15s ease, transform .15s ease; }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-sm { padding: 2.2mm 4.5mm; font-size: 9.5pt; border-radius: 1.6mm; }
+  .btn-orange { background: var(--orange); border-color: var(--orange); color: #fff; }
+  .btn-outline { background: none; color: var(--bleu); border-color: var(--bleu); }
+  .btn-outline:hover { background: var(--bleu-clair); }
+  .nav-liens { display: none; gap: 6mm; font-weight: 600; font-size: 10pt; }
+  .nav-liens a:not(.btn) { text-decoration: none; }
+  .nav-liens a:not(.btn):hover { color: var(--bleu); }
+  @media (min-width: 800px) { .nav-liens { display: flex; align-items: center; } }
+
+  main { padding: 10mm 0 16mm; }
+  main h1 { font-size: 22pt; margin-bottom: 2mm; }
+  .maj { color: var(--gris-texte); font-size: 9pt; margin-bottom: 8mm; }
+  main h2 { font-size: 13pt; margin: 8mm 0 3mm; }
+  main p, main li { color: var(--gris-texte); font-size: 10.5pt; margin-bottom: 3mm; }
+  main ul { padding-left: 5mm; margin-bottom: 3mm; }
+  main p strong, main li strong { color: var(--texte); }
+
+  .avis { background: #FFF4E8; border-left: 3px solid var(--orange); padding: 4mm 5mm; border-radius: 1mm; font-size: 9.5pt; margin-bottom: 8mm; }
+  .avis strong { color: var(--texte); }
+
+  footer { border-top: 1px solid #E4E7EB; padding: 8mm 0; margin-top: 10mm; }
+  .footer-grille { display: flex; flex-direction: column; gap: 4mm; align-items: center; text-align: center; }
+  @media (min-width: 800px) { .footer-grille { flex-direction: row; justify-content: space-between; text-align: left; } }
+  .footer-liens { display: flex; gap: 6mm; font-size: 9.5pt; color: var(--gris-texte); flex-wrap: wrap; justify-content: center; }
+  .footer-liens a { color: var(--gris-texte); text-decoration: none; }
+  .footer-liens a:hover { color: var(--bleu); }
+</style>
+</head>
+<body>
+
+<div class="enveloppe">
+  <nav>
+    <a href="accueil.html" class="nav-logo">CV<span>MG</span></a>
+    <div class="nav-liens">
+      <a href="accueil.html#comment-ca-marche">Comment ça marche</a>
+      <a href="connexion.php" class="btn btn-sm btn-outline">Se connecter</a>
+      <a href="creer-cv.php" class="btn btn-sm btn-orange">Créer mon CV</a>
+    </div>
+  </nav>
+</div>
+
+<main class="enveloppe">
+  <h1>Conditions d'utilisation</h1>
+  <p class="maj">Dernière mise à jour : à compléter au moment de la mise en ligne.</p>
+
+  <div class="avis">
+    <strong>Avant publication :</strong> ce texte est une base, pas un document juridique validé. Faites-le relire par un professionnel du droit avant la mise en ligne officielle du service.
+  </div>
+
+  <h2>1. Le service</h2>
+  <p>CVMG est un service gratuit qui aide à créer un curriculum vitae (CV) au format PDF. En utilisant CVMG, vous acceptez les présentes conditions.</p>
+
+  <h2>2. Votre responsabilité</h2>
+  <ul>
+    <li>Les informations que vous saisissez dans votre CV doivent être exactes et vous concerner personnellement.</li>
+    <li>La fonction de scan de carte d'identité ne doit être utilisée que pour votre propre carte, ou celle d'une personne qui vous a donné son accord (par exemple, si vous créez un CV pour un proche).</li>
+    <li>Vous restez responsable du contenu final de votre CV et de son usage auprès des employeurs.</li>
+  </ul>
+
+  <h2>3. Ce que CVMG ne garantit pas</h2>
+  <p>CVMG vous aide à produire un document clair et professionnel, mais ne garantit ni l'obtention d'un emploi, ni d'entretien, ni de réponse d'un employeur. Le service est fourni tel quel, sans garantie de disponibilité permanente.</p>
+
+  <h2>4. Usages interdits</h2>
+  <ul>
+    <li>Utiliser CVMG pour créer un CV contenant de fausses informations dans une intention frauduleuse.</li>
+    <li>Scanner la carte d'identité d'une personne sans son consentement.</li>
+    <li>Tenter de perturber le fonctionnement du service ou d'accéder à des données qui ne vous appartiennent pas.</li>
+  </ul>
+
+  <h2>5. Évolution du service</h2>
+  <p>CVMG peut évoluer : ajout, modification ou retrait de fonctionnalités, avec ou sans préavis. Les présentes conditions peuvent être mises à jour ; la date en haut de cette page indique la dernière version.</p>
+
+  <h2>6. Droit applicable</h2>
+  <p>Les présentes conditions sont, à ce stade, rédigées dans la perspective d'un usage à Madagascar. Le droit applicable définitif devra être confirmé lors de la relecture juridique du document.</p>
+
+  <h2>7. Nous contacter</h2>
+  <p>Pour toute question sur ces conditions, rendez-vous sur notre page <a href="contact.html" class="lien">Contact</a>.</p>
+</main>
+
+<footer>
+  <div class="enveloppe footer-grille">
+    <a href="accueil.html" class="nav-logo" style="font-size:12pt">CV<span>MG</span></a>
+    <div class="footer-liens">
+      <a href="apropos.html">À propos</a>
+      <a href="contact.html" class="lien">Contact</a>
+      <a href="confidentialite.html">Confidentialité</a>
+      <a href="conditions.html">Conditions d'utilisation</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

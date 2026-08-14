@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte Nationale d'Identité - Formulaire</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .card-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .card-title {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        .form-row {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        .form-group {
+            flex: 1;
+            margin-right: 10px;
+        }
+        .form-group:last-child {
+            margin-right: 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="date"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .photo-container {
+            width: 150px;
+            height: 180px;
+            border: 1px dashed #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        .photo-placeholder {
+            text-align: center;
+            color: #999;
+        }
+        .signature-area {
+            margin-top: 30px;
+            border-top: 1px solid #000;
+            padding-top: 10px;
+        }
+        .submit-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .submit-btn:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <form class="card-style" id="identityCardForm">
+        <div class="card-header">
+            <div class="card-title">REPOBLIKAN'I MADAGASCAR</div>
+            <div class="card-title">KARA-PANONDROM-PIRENENA</div>
+            <div class="card-title">Carte Nationale d'Identité</div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="nom">ANARANA/Nom:</label>
+                <input type="text" id="nom" name="nom" placeholder="Entrez votre nom">
+            </div>
+            <div class="form-group">
+                <label for="prenom">FANAMPIN'ANARANA/Prénom:</label>
+                <input type="text" id="prenom" name="prenom" placeholder="Entrez votre prénom">
+            </div>
+        </div>
+
+        <div class="form-row">
+            
+            <div class="form-group">
+                <label for="dateNaissance">TERAKA TAMIN'NY / Né le:</label>
+                <input type="date" id="dateNaissance" name="dateNaissance">
+                
+                <label for="lieuNaissance">TAO/a:</label>
+                <input type="text" id="lieuNaissance" name="lieuNaissance" placeholder="Lieu de naissance">
+                
+                <label for="signeParticulier">FAMANTARANA MANOKANA/ Signe particulier:</label>
+                <input type="text" id="signeParticulier" name="signeParticulier" placeholder="Signe particulier">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="numero">Laharana:</label>
+                <input type="text" id="numero" name="numero" placeholder="Numéro d'identification">
+            </div>
+        </div>
+
+        <div class="signature-area">
+            <p>Signature:</p>
+            <!-- Space for signature would typically be added here -->
+        </div>
+
+        <button type="submit" class="submit-btn">Enregistrer</button>
+    </form>
+
+    <script>
+        document.getElementById('identityCardForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // Here you would typically handle form submission
+            alert('Formulaire soumis avec succès!');
+            // You could add AJAX call to send data to server
+        });
+    </script>
+</body>
+</html>

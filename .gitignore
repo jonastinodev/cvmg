@@ -1,0 +1,10 @@
+# Secrets — ne jamais versionner
+config.php
+
+# Dépendances Composer (réinstallables via composer install)
+/vendor/
+
+# Journaux et fichiers temporaires
+*.log
+.DS_Store
+Thumbs.db

@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -n \"^\\\\s*//\\\\s*---\\\\|^<script\\\\|^</script>\\\\|^<style\\\\|^</style>\\\\|function [a-zA-Z]\" creer-cv.php)",
+      "Bash(git init *)",
+      "Bash(git config *)",
+      "Bash(git add *)"
+    ]
+  }
+}

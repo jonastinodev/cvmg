@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contact — CVMG</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+  :root {
+    --bleu: #1863F2; --bleu-marine: #0B1F3D; --bleu-clair: #EAF2FF;
+    --orange: #F7941D; --orange-fonce: #DB7A00;
+    --texte: #22262B; --gris-texte: #5B6472; --gris-fond: #F6F7F9;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', Arial, sans-serif; color: var(--texte); line-height: 1.6; }
+  a { color: inherit; }
+  .lien { color: var(--bleu); }
+  .enveloppe { max-width: 1180px; margin: 0 auto; padding: 0 6vw; }
+  main.enveloppe { max-width: 900px; }
+  h1, h2 { font-family: 'Poppins', sans-serif; color: var(--bleu-marine); line-height: 1.2; }
+
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 5mm 0; }
+  .nav-logo { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 15pt; color: var(--bleu-marine); text-decoration: none; }
+  .nav-logo span { color: var(--orange); }
+  .nav-liens { display: none; gap: 6mm; font-weight: 600; font-size: 10pt; }
+  .nav-liens a:not(.btn) { text-decoration: none; }
+  .nav-liens a:not(.btn):hover { color: var(--bleu); }
+  @media (min-width: 800px) { .nav-liens { display: flex; align-items: center; } }
+
+  main { padding: 10mm 0 16mm; }
+  main h1 { font-size: 24pt; margin-bottom: 3mm; }
+  main > .enveloppe > p, .intro { color: var(--gris-texte); font-size: 10.5pt; margin-bottom: 8mm; max-width: 60ch; }
+
+  .grille-contact { display: grid; gap: 8mm; }
+  @media (min-width: 800px) { .grille-contact { grid-template-columns: 1fr 1.2fr; } }
+
+  .cartes-directes { display: flex; flex-direction: column; gap: 4mm; }
+  .carte-contact { background: var(--gris-fond); border-radius: 3mm; padding: 6mm; text-decoration: none; color: var(--texte); display: block; }
+  .carte-contact strong { display: block; font-size: 10.5pt; margin-bottom: 1mm; }
+  .carte-contact span { color: var(--gris-texte); font-size: 9.5pt; }
+
+  form { display: flex; flex-direction: column; gap: 4mm; }
+  label { font-size: 9.5pt; font-weight: 600; }
+  input, textarea { width: 100%; padding: 3mm; border: 1.5px solid #DCE1E7; border-radius: 2mm; font-size: 10.5pt; font-family: inherit; margin-top: 1mm; }
+  input:focus, textarea:focus { outline: 2px solid var(--bleu); border-color: var(--bleu); }
+  textarea { resize: vertical; min-height: 28mm; }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 1.5mm; font-family: inherit;
+    font-weight: 700; font-size: 10.5pt; padding: 3.6mm 7mm; border-radius: 2mm; border: 1.5px solid transparent;
+    cursor: pointer; text-decoration: none; white-space: nowrap;
+    transition: background .15s ease, transform .15s ease, opacity .15s ease; }
+  .btn:hover { transform: translateY(-1px); }
+  .btn:focus-visible { outline: 2px solid var(--bleu); outline-offset: 2px; }
+  .btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+  .btn-sm { padding: 2.2mm 4.5mm; font-size: 9.5pt; border-radius: 1.6mm; }
+  .btn-orange { background: var(--orange); border-color: var(--orange); color: #fff; }
+  .btn-orange:hover { background: var(--orange-fonce); }
+  .btn-outline { background: none; color: var(--bleu); border-color: var(--bleu); }
+  .btn-outline:hover { background: var(--bleu-clair); }
+
+  #messageEnvoi { font-size: 9.5pt; margin-top: 2mm; display: none; }
+  #messageEnvoi.succes { color: #2E7D5B; display: block; }
+  #messageEnvoi.erreur { color: #B00020; display: block; }
+
+  .avis { background: #FFF4E8; border-left: 3px solid var(--orange); padding: 4mm 5mm; border-radius: 1mm; font-size: 9.5pt; margin-bottom: 8mm; }
+  .avis strong { color: var(--texte); }
+
+  footer { border-top: 1px solid #E4E7EB; padding: 8mm 0; margin-top: 10mm; }
+  .footer-grille { display: flex; flex-direction: column; gap: 4mm; align-items: center; text-align: center; }
+  @media (min-width: 800px) { .footer-grille { flex-direction: row; justify-content: space-between; text-align: left; } }
+  .footer-liens { display: flex; gap: 6mm; font-size: 9.5pt; color: var(--gris-texte); flex-wrap: wrap; justify-content: center; }
+  .footer-liens a { color: var(--gris-texte); text-decoration: none; }
+  .footer-liens a:hover { color: var(--bleu); }
+</style>
+</head>
+<body>
+
+<div class="enveloppe">
+  <nav>
+    <a href="accueil.html" class="nav-logo">CV<span>MG</span></a>
+    <div class="nav-liens">
+      <a href="accueil.html#comment-ca-marche">Comment ça marche</a>
+      <a href="connexion.php" class="btn btn-sm btn-outline">Se connecter</a>
+      <a href="creer-cv.php" class="btn btn-sm btn-orange">Créer mon CV</a>
+    </div>
+  </nav>
+</div>
+
+<main class="enveloppe">
+  <h1>Nous contacter</h1>
+  <p class="intro">Une question sur votre CV, un souci technique, une suggestion ? Écrivez-nous — nous répondons personnellement à chaque message.</p>
+
+  <div class="avis">
+    <strong>À faire avant mise en ligne :</strong> remplace les adresses/numéros ci-dessous (actuellement des exemples) par les vrais contacts de CVMG, dans le HTML de cette page.
+  </div>
+
+  <div class="grille-contact">
+
+    <div class="cartes-directes">
+      <a href="mailto:contact@cvmg.mg" class="carte-contact">
+        <strong>Par e-mail</strong>
+        <span>contact@cvmg.mg</span>
+      </a>
+      <a href="https://wa.me/261340000000" class="carte-contact" target="_blank" rel="noopener">
+        <strong>Par WhatsApp</strong>
+        <span>+261 34 00 000 00</span>
+      </a>
+    </div>
+
+    <div>
+      <form id="formContact">
+        <div>
+          <label for="nom">Votre nom</label>
+          <input type="text" id="nom" name="nom" required>
+        </div>
+        <div>
+          <label for="email">Votre e-mail</label>
+          <input type="email" id="email" name="email" required>
+        </div>
+        <div>
+          <label for="message">Votre message</label>
+          <textarea id="message" name="message" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-orange" id="btnEnvoyer">Envoyer le message</button>
+        <p id="messageEnvoi"></p>
+      </form>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  <div class="enveloppe footer-grille">
+    <a href="accueil.html" class="nav-logo" style="font-size:12pt">CV<span>MG</span></a>
+    <div class="footer-liens">
+      <a href="apropos.html">À propos</a>
+      <a href="contact.html" class="lien">Contact</a>
+      <a href="confidentialite.html">Confidentialité</a>
+      <a href="conditions.html">Conditions d'utilisation</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+document.getElementById('formContact').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const bouton = document.getElementById('btnEnvoyer');
+  const zoneMessage = document.getElementById('messageEnvoi');
+  const texteOriginal = bouton.textContent;
+  bouton.textContent = 'Envoi en cours...';
+  bouton.disabled = true;
+  zoneMessage.className = '';
+
+  const donnees = {
+    nom: document.getElementById('nom').value,
+    email: document.getElementById('email').value,
+    message: document.getElementById('message').value,
+  };
+
+  try {
+    const res = await fetch('traiter-contact.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(donnees),
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok || !data || data.erreur) throw new Error((data && data.erreur) || `Erreur serveur (HTTP ${res.status})`);
+
+    zoneMessage.textContent = 'Message envoyé — merci, nous vous répondrons rapidement.';
+    zoneMessage.className = 'succes';
+    document.getElementById('formContact').reset();
+  } catch (err) {
+    zoneMessage.textContent = "Erreur lors de l'envoi : " + err.message;
+    zoneMessage.className = 'erreur';
+  } finally {
+    bouton.textContent = texteOriginal;
+    bouton.disabled = false;
+  }
+});
+</script>
+
+</body>
+</html>
