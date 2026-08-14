@@ -376,7 +376,7 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
 <div class="modale-cin-fond" id="modaleCinFond">
   <div class="modale-cin" role="dialog" aria-modal="true" aria-label="Scanner ma carte d'identité">
     <div class="cin-entete">
-      <img src="media/drapeau-madagascar.png" alt="MG" class="cin-drapeau" onerror="this.style.display='none'">
+      <img src="media/drapeau-madagascar.png" alt="MG" class="cin-drapeau" width="32" height="24" onerror="this.style.display='none'">
       <h3>Kara-panondrom-pirenena</h3>
       <button type="button" id="btnFermerCin" aria-label="Fermer">✕</button>
     </div>
