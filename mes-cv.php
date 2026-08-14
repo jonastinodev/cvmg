@@ -52,9 +52,10 @@ $mesCV = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
   /* Grille façon Google Docs/Drive : vignettes de taille fixe, le nombre de
      colonnes s'adapte à la largeur disponible (pas de colonnes élastiques,
-     pour que la mise à l'échelle de la miniature ci-dessous reste exacte). */
-  .liste-cv { display: grid; gap: 5mm; grid-template-columns: repeat(auto-fill, 150px); }
-  @media (min-width: 700px) { .liste-cv { grid-template-columns: repeat(auto-fill, 180px); } }
+     pour que la mise à l'échelle de la miniature ci-dessous reste exacte).
+     190px : largeur minimale pour que les 4 actions (Voir/Modifier/
+     Dupliquer/Supprimer) restent lisibles en grille 2x2 sans troncature. */
+  .liste-cv { display: grid; gap: 5mm; grid-template-columns: repeat(auto-fill, 190px); }
 
   .carte-cv { background: #fff; border: 1px solid #E4E7EB; border-radius: 3mm; overflow: hidden;
     transition: transform .15s ease, box-shadow .15s ease; }
@@ -70,20 +71,20 @@ $mesCV = $stmt->fetchAll(PDO::FETCH_ASSOC);
   .cv-miniature { position: relative; width: 100%; aspect-ratio: 210 / 297; overflow: hidden;
     background: #fff; border-bottom: 1px solid #E4E7EB; }
   .cv-miniature iframe { position: absolute; top: 0; left: 0; width: 794px; height: 1123px;
-    border: 0; transform-origin: top left; transform: scale(0.1889); pointer-events: none; }
-  @media (min-width: 700px) {
-    .cv-miniature iframe { transform: scale(0.2267); }
-  }
+    border: 0; transform-origin: top left; transform: scale(0.2393); pointer-events: none; }
 
   .carte-cv-info { padding: 3.5mm 4mm 2.5mm; }
   .carte-cv-info h3 { font-family: 'Poppins', sans-serif; font-size: 10.5pt; color: var(--bleu-marine);
     margin-bottom: 1mm; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .carte-cv-info .maj { font-size: 8pt; color: var(--gris-texte); }
 
-  .actions-cv { display: flex; gap: 2mm; padding: 0 4mm 4mm; }
-  .actions-cv button { flex: 1; font-size: 8.5pt; padding: 1.8mm 2mm; border-radius: 1.6mm; border: 1px solid #DCE1E7;
-    background: #fff; color: var(--texte); cursor: pointer; font-family: inherit; }
-  .actions-cv button:hover { background: var(--gris-fond); }
+  /* 4 actions distinctes (Voir, Modifier, Dupliquer, Supprimer) : une grille
+     2x2 plutôt qu'une ligne, qui ne tiendrait pas dans une carte de 190px. */
+  .actions-cv { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5mm; padding: 0 3.5mm 3.5mm; }
+  .actions-cv button, .actions-cv a { font-size: 7.8pt; padding: 1.6mm 1mm; border-radius: 1.6mm; border: 1px solid #DCE1E7;
+    background: #fff; color: var(--texte); cursor: pointer; font-family: inherit; text-align: center;
+    text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .actions-cv button:hover, .actions-cv a:hover { background: var(--gris-fond); }
   .actions-cv .supprimer { color: var(--rouge); border-color: #F3D2D6; }
 
   .etat-vide { text-align: center; padding: 16mm 4mm; color: var(--gris-texte); }
@@ -128,6 +129,8 @@ $mesCV = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
           </a>
           <div class="actions-cv">
+            <a href="voir-cv.php?id=<?= (int)$cv_item['id'] ?>" target="_blank" rel="noopener">Voir</a>
+            <a href="creer-cv.php?cv_id=<?= (int)$cv_item['id'] ?>">Modifier</a>
             <button type="button" class="btn-dupliquer">Dupliquer</button>
             <button type="button" class="supprimer">Supprimer</button>
           </div>
