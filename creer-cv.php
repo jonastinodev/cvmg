@@ -10,6 +10,8 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Créer mon CV — CVMG</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#1863F2">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap');
   @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined');

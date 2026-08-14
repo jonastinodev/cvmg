@@ -1,0 +1,22 @@
+User-agent: *
+Allow: /
+
+# Pages applicatives et points d'accès : hors index
+Disallow: /creer-cv.php
+Disallow: /mes-cv.php
+Disallow: /connexion.php
+Disallow: /apercu-cv.php
+Disallow: /charger-cv.php
+Disallow: /enregistrer-cv.php
+Disallow: /dupliquer-cv.php
+Disallow: /supprimer-cv.php
+Disallow: /generer-pdf.php
+Disallow: /ocr.php
+Disallow: /verifier-google.php
+Disallow: /traiter-contact.php
+Disallow: /deconnexion.php
+Disallow: /diag.php
+Disallow: /test-pdf.php
+
+# Remplacer cvmg.mg par le domaine réel si différent
+Sitemap: https://cvmg.mg/sitemap.xml
