@@ -77,10 +77,11 @@
   .hero h1 .accent { color: var(--orange); }
   .hero p.lead { font-size: 12pt; color: var(--gris-texte); margin: 5mm 0 7mm; max-width: 46ch; }
   .hero-boutons { display: flex; align-items: center; gap: 3.5mm; }
+  .hero-reassurance { margin-top: 4mm; font-size: 9pt; color: var(--gris-texte); }
 
   /* Illustration héro : plus de carte de fond, léger flottement continu */
   .hero-illu { display: flex; align-items: center; justify-content: center; }
-  .hero-illu img { max-width: 100%; animation: flotter 4.5s ease-in-out infinite; }
+  .hero-illu img { max-width: 100%; height: auto; animation: flotter 4.5s ease-in-out infinite; }
   @keyframes flotter { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 
   /* ===== Comment ça marche ===== */
@@ -104,7 +105,7 @@
   @media (min-width: 800px) { .fonction { grid-template-columns: 1fr 1fr; } }
   .fonction.inverse .fonction-texte { order: 2; }
   .fonction-illu { display: flex; align-items: center; justify-content: center; }
-  .fonction-illu img { max-width: 100%; }
+  .fonction-illu img { max-width: 100%; height: auto; }
   .fonction-texte h3 { font-size: 17pt; margin-bottom: 3mm; }
   .fonction-texte p { color: var(--gris-texte); font-size: 10.5pt; margin-bottom: 5mm; }
   .fonction-liste { list-style: none; font-size: 10pt; }
@@ -177,15 +178,16 @@
   <div class="enveloppe hero-grille">
     <div class="reveal">
       <h1>Créez votre CV professionnel, <span class="accent">facilement</span></h1>
-      <p class="lead">Même sans expérience ou diplôme, valorisez vos compétences et trouvez des opportunités. Remplissez, choisissez un modèle, téléchargez — en quelques minutes, depuis votre téléphone.</p>
+      <p class="lead">Même sans expérience ou diplôme, valorisez vos compétences et trouvez des opportunités. Remplissez, vérifiez l'aperçu, téléchargez en PDF — en quelques minutes, depuis votre téléphone.</p>
       <div class="hero-boutons">
         <a href="creer-cv.php" class="btn btn-orange">Créer mon CV gratuitement</a>
         <a href="#comment-ca-marche" class="btn btn-outline">Voir comment ça marche</a>
       </div>
+      <p class="hero-reassurance">Gratuit &bull; Sans inscription &bull; Votre CV en PDF en quelques minutes</p>
     </div>
     <div class="hero-illu reveal">
       <!-- Dépose ton illustration téléchargée ici : illustrations/hero.svg -->
-      <img src="illustrations/hero.svg" alt="" onerror="this.replaceWith(Object.assign(document.createElement('div'),{innerHTML:'<p style=\'color:#5B6472;font-size:9pt;text-align:center;padding:14mm 4mm\'>Emplacement illustration héro — dépose illustrations/hero.svg</p>'}).firstChild)">
+      <img src="illustrations/hero.svg" alt="Illustration : création de CV en ligne" width="500" height="500" decoding="async">
     </div>
   </div>
 </section>
@@ -205,7 +207,7 @@
       <div class="etape-carte reveal">
         <div class="etape-numero">2</div>
         <h3>Vérifiez l'aperçu</h3>
-        <p>Votre CV se construit sous vos yeux, dans une mise en page claire et professionnelle.</p>
+        <p>Vous prévisualisez votre CV dans une mise en page claire et professionnelle, avant de le télécharger.</p>
       </div>
       <div class="etape-carte reveal">
         <div class="etape-numero">3</div>
@@ -231,7 +233,7 @@
       </div>
       <div class="fonction-illu">
         <!-- Dépose ton illustration téléchargée ici : illustrations/feature-cin.svg -->
-        <img src="illustrations/feature-cin.svg" alt="" onerror="this.replaceWith(Object.assign(document.createElement('div'),{innerHTML:'<p style=\'color:#5B6472;font-size:9pt;text-align:center;padding:14mm 4mm\'>Emplacement illustration — dépose illustrations/feature-cin.svg</p>'}).firstChild)">
+        <img src="illustrations/feature-cin.svg" alt="Illustration : scan de la carte d'identité" width="500" height="500" loading="lazy" decoding="async">
       </div>
     </div>
 
@@ -247,28 +249,16 @@
       </div>
       <div class="fonction-illu">
         <!-- Dépose ton illustration téléchargée ici : illustrations/feature-accessible.svg -->
-        <img src="illustrations/feature-accessible.svg" alt="" onerror="this.replaceWith(Object.assign(document.createElement('div'),{innerHTML:'<p style=\'color:#5B6472;font-size:9pt;text-align:center;padding:14mm 4mm\'>Emplacement illustration — dépose illustrations/feature-accessible.svg</p>'}).firstChild)">
+        <img src="illustrations/feature-accessible.svg" alt="Illustration : application accessible sur mobile" width="500" height="500" loading="lazy" decoding="async">
       </div>
     </div>
 
   </div>
 </section>
 
-<section class="section">
-  <div class="enveloppe">
-    <div class="section-titre reveal">
-      <h2>Ils ont créé leur CV avec CVMG</h2>
-    </div>
-    <div class="temoignage-carte reveal">
-      <div class="temoignage-avatar">NR</div>
-      <div class="temoignage-texte">
-        <p>« J'ai créé mon CV en 10 minutes depuis mon téléphone, en scannant juste ma carte d'identité. Je l'ai envoyé le jour même pour un poste de vendeuse. »</p>
-        <div class="temoignage-nom">Nirina R.</div>
-        <div class="temoignage-role">Antananarivo</div>
-      </div>
-    </div>
-  </div>
-</section>
+<!-- Section témoignage retirée : le témoignage affiché était fictif. À rétablir
+     uniquement avec de vrais avis signés (sinon risque de pratique commerciale
+     trompeuse). -->
 
 <section class="section">
   <div class="enveloppe">
