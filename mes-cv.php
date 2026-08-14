@@ -119,7 +119,7 @@ $mesCV = $stmt->fetchAll(PDO::FETCH_ASSOC);
       <?php foreach ($mesCV as $cv_item): ?>
         <?php $donnees = json_decode($cv_item['donnees_json'], true) ?: []; ?>
         <div class="carte-cv" data-id="<?= (int)$cv_item['id'] ?>">
-          <a href="creer-cv.php?cv_id=<?= (int)$cv_item['id'] ?>" class="cv-lien-ouvrir">
+          <a href="voir-cv.php?id=<?= (int)$cv_item['id'] ?>" class="cv-lien-ouvrir">
             <div class="cv-miniature">
               <iframe srcdoc="<?= htmlspecialchars(genererCvHtml($donnees), ENT_QUOTES, 'UTF-8') ?>" tabindex="-1" aria-hidden="true"></iframe>
             </div>
@@ -129,7 +129,7 @@ $mesCV = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
           </a>
           <div class="actions-cv">
-            <a href="voir-cv.php?id=<?= (int)$cv_item['id'] ?>" target="_blank" rel="noopener">Voir</a>
+            <a href="voir-cv.php?id=<?= (int)$cv_item['id'] ?>">Voir</a>
             <a href="creer-cv.php?cv_id=<?= (int)$cv_item['id'] ?>">Modifier</a>
             <button type="button" class="btn-dupliquer">Dupliquer</button>
             <button type="button" class="supprimer">Supprimer</button>
