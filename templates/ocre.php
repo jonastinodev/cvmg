@@ -10,7 +10,7 @@ function genererCvOcre(array $cv): string {
     $formations = $cv['formations'] ?? [];
     $competences = array_filter($cv['competences'] ?? [], fn($c) => ($c['categorie'] ?? '') !== 'langue');
     $langues = $cv['langues'] ?? [];
-    $complementaire = $cv['complementaire'] ?? [];
+    [$interets, $autresComplementaires] = separerComplementaire($cv['complementaire'] ?? []);
 
     ob_start();
     ?>
@@ -141,11 +141,20 @@ function genererCvOcre(array $cv): string {
           </div>
         <?php endif; ?>
 
-        <?php if (!empty($complementaire)): ?>
+        <?php if (!empty($interets)): ?>
+          <div class="cote-bloc">
+            <div class="cote-titre">Centres d'intérêt</div>
+            <?php foreach ($interets as $it): ?>
+              <div class="coord-ligne"><?= e($it['libelle'] ?? '') ?></div>
+            <?php endforeach; ?>
+          </div>
+        <?php endif; ?>
+
+        <?php if (!empty($autresComplementaires)): ?>
           <div class="cote-bloc">
             <div class="cote-titre">Complémentaire</div>
-            <?php foreach ($complementaire as $ci): ?>
-              <div class="coord-ligne"><?= e($ci['libelle'] ?? '') ?></div>
+            <?php foreach ($autresComplementaires as $ci): ?>
+              <div class="coord-ligne"><b><?= e(libelleTypeComplementaire($ci['type'] ?? '')) ?> :</b> <?= e($ci['libelle'] ?? '') ?></div>
             <?php endforeach; ?>
           </div>
         <?php endif; ?>

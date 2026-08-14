@@ -11,9 +11,7 @@ function genererCvOlive(array $cv): string {
     $competencesTechniques = array_values(array_filter($cv['competences'] ?? [], fn($c) => ($c['categorie'] ?? '') === 'technique'));
     $qualites = array_values(array_filter($cv['competences'] ?? [], fn($c) => ($c['categorie'] ?? '') === 'qualite'));
     $langues = $cv['langues'] ?? [];
-    $complementaire = $cv['complementaire'] ?? [];
-    $interets = array_values(array_filter($complementaire, fn($c) => ($c['type'] ?? '') === 'interet'));
-    $autresComplementaires = array_values(array_filter($complementaire, fn($c) => ($c['type'] ?? '') !== 'interet'));
+    [$interets, $autresComplementaires] = separerComplementaire($cv['complementaire'] ?? []);
 
     ob_start();
     ?>
@@ -165,7 +163,7 @@ function genererCvOlive(array $cv): string {
           <div class="cote-bloc">
             <div class="cote-titre">Complémentaire</div>
             <ul class="liste-cote">
-              <?php foreach ($autresComplementaires as $ci): ?><li><?= e($ci['libelle'] ?? '') ?></li><?php endforeach; ?>
+              <?php foreach ($autresComplementaires as $ci): ?><li><b><?= e(libelleTypeComplementaire($ci['type'] ?? '')) ?> :</b> <?= e($ci['libelle'] ?? '') ?></li><?php endforeach; ?>
             </ul>
           </div>
         <?php endif; ?>

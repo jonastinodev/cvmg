@@ -10,7 +10,7 @@ function genererCvBleuMarine(array $cv): string {
     $formations = $cv['formations'] ?? [];
     $competences = array_filter($cv['competences'] ?? [], fn($c) => ($c['categorie'] ?? '') !== 'langue');
     $langues = $cv['langues'] ?? [];
-    $complementaire = $cv['complementaire'] ?? [];
+    [$interets, $autresComplementaires] = separerComplementaire($cv['complementaire'] ?? []);
 
     ob_start();
     ?>
@@ -130,12 +130,23 @@ function genererCvBleuMarine(array $cv): string {
           </div>
         <?php endif; ?>
 
-        <?php if (!empty($complementaire)): ?>
+        <?php if (!empty($interets)): ?>
           <div class="cote-bloc">
             <div class="cote-titre">Centres d'intérêt</div>
             <ul class="liste-cote">
-              <?php foreach ($complementaire as $ci): ?>
-                <li><?= e($ci['libelle'] ?? '') ?></li>
+              <?php foreach ($interets as $it): ?>
+                <li><?= e($it['libelle'] ?? '') ?></li>
+              <?php endforeach; ?>
+            </ul>
+          </div>
+        <?php endif; ?>
+
+        <?php if (!empty($autresComplementaires)): ?>
+          <div class="cote-bloc">
+            <div class="cote-titre">Complémentaire</div>
+            <ul class="liste-cote">
+              <?php foreach ($autresComplementaires as $ci): ?>
+                <li><b><?= e(libelleTypeComplementaire($ci['type'] ?? '')) ?> :</b> <?= e($ci['libelle'] ?? '') ?></li>
               <?php endforeach; ?>
             </ul>
           </div>

@@ -176,7 +176,7 @@ function genererCvClassique(array $cv): string {
               <div class="titre-section">Complémentaire</div>
               <ul class="liste-simple">
                 <?php foreach ($complementaire as $ci): ?>
-                  <li><?= e($ci['libelle'] ?? '') ?></li>
+                  <li><b><?= e(libelleTypeComplementaire($ci['type'] ?? '')) ?> :</b> <?= e($ci['libelle'] ?? '') ?></li>
                 <?php endforeach; ?>
               </ul>
             </div>

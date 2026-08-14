@@ -55,6 +55,32 @@ function niveauVersPourcentage(string $niveau): int {
     };
 }
 
+// Étiquette d'affichage pour chaque type de complementaire[] (miroir exact des
+// types produits par construireDonneesCV() dans creer-cv.php : disponibilite,
+// mobilite, benevolat, projet, certification, reference, interet).
+function libelleTypeComplementaire(string $type): string {
+    return match ($type) {
+        'disponibilite'  => 'Disponibilité',
+        'mobilite'       => 'Mobilité',
+        'benevolat'      => 'Bénévolat',
+        'projet'         => 'Projet',
+        'certification'  => 'Certification',
+        'reference'      => 'Référence',
+        'interet'        => 'Centre d\'intérêt',
+        default          => '',
+    };
+}
+
+// Sépare complementaire[] en centres d'intérêt (type=interet) et le reste
+// (disponibilité, mobilité, bénévolat, projets, certifications, références) :
+// ce sont des informations de nature différente, elles ne doivent jamais être
+// affichées mélangées sous « Centres d'intérêt ».
+function separerComplementaire(array $complementaire): array {
+    $interets = array_values(array_filter($complementaire, fn($c) => ($c['type'] ?? '') === 'interet'));
+    $autres = array_values(array_filter($complementaire, fn($c) => ($c['type'] ?? '') !== 'interet'));
+    return [$interets, $autres];
+}
+
 function genererCvHtml(array $cv): string {
     $id = $cv['modele'] ?? 'classique';
     $fonction = MODELES_CV[$id]['fonction'] ?? MODELES_CV['classique']['fonction'];
