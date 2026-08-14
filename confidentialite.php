@@ -118,17 +118,7 @@ $estConnecte = !empty($_SESSION['utilisateur_id']);
   <p>Pour toute question sur cette politique, rendez-vous sur notre page <a href="contact.php" class="lien">Contact</a>.</p>
 </main>
 
-<footer>
-  <div class="enveloppe footer-grille">
-    <a href="accueil.php" class="nav-logo" style="font-size:12pt">CV<span>MG</span></a>
-    <div class="footer-liens">
-      <a href="apropos.php">À propos</a>
-      <a href="contact.php" class="lien">Contact</a>
-      <a href="confidentialite.php">Confidentialité</a>
-      <a href="conditions.php">Conditions d'utilisation</a>
-    </div>
-  </div>
-</footer>
+<?php include __DIR__ . '/partials/pied.php'; ?>
 
 </body>
 </html>

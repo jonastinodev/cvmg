@@ -278,17 +278,7 @@ $estConnecte = !empty($_SESSION['utilisateur_id']);
   </div>
 </section>
 
-<footer>
-  <div class="enveloppe footer-grille">
-    <div class="nav-logo" style="font-size:12pt">CV<span>MG</span></div>
-    <div class="footer-liens">
-      <a href="apropos.php">À propos</a>
-      <a href="contact.php">Contact</a>
-      <a href="confidentialite.php">Confidentialité</a>
-      <a href="conditions.php">Conditions d'utilisation</a>
-    </div>
-  </div>
-</footer>
+<?php include __DIR__ . '/partials/pied.php'; ?>
 
 <script>
 // Animation d'apparition au défilement — natif, sans librairie.
