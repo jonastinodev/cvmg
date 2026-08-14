@@ -38,8 +38,14 @@ $typesAutorises = [
 
 // --- 2. Construction des parties du message pour Gemini ---
 $parties = [];
+$TAILLE_MAX = 8 * 1024 * 1024; // 8 Mo par fichier
 foreach ($fichiers as $fichier) {
-    $type = $fichier['type'];
+    if (($fichier['size'] ?? 0) > $TAILLE_MAX) {
+        repondreErreur("Fichier trop volumineux (8 Mo maximum par fichier).");
+    }
+    // Type réel déduit du CONTENU du fichier (finfo), et non de l'en-tête MIME
+    // envoyé par le navigateur, qui est falsifiable.
+    $type = (new finfo(FILEINFO_MIME_TYPE))->file($fichier['tmp_name']);
     if (!isset($typesAutorises[$type])) {
         repondreErreur("Type de fichier non supporté : $type");
     }

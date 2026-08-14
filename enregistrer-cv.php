@@ -4,7 +4,7 @@
 // generer-pdf.php, plus un titre et, en cas de modification, l'id du CV.
 
 require_once __DIR__ . '/exiger-connexion.php';
-require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/bdd.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -27,15 +27,7 @@ if ($titre === '') {
 $donneesJson = json_encode($entree['donnees'], JSON_UNESCAPED_UNICODE);
 $cvId = $entree['cv_id'] ?? null;
 
-try {
-    $pdo = new PDO(
-        'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4',
-        DB_USER, DB_PASS,
-        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-    );
-} catch (PDOException $e) {
-    repondreErreur('Connexion à la base impossible.', 500);
-}
+$pdo = bdd();
 
 $utilisateurId = $_SESSION['utilisateur_id'];
 

@@ -7,7 +7,7 @@
 // en curl, comme pour Gemini dans ocr.php.
 
 require_once __DIR__ . '/session.php';
-require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/bdd.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -52,16 +52,7 @@ $nom = $payload['name'] ?? $email;
 $photo = $payload['picture'] ?? null;
 
 // --- 2. Créer ou retrouver le compte correspondant ---
-try {
-    $pdo = new PDO(
-        'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4',
-        DB_USER,
-        DB_PASS,
-        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-    );
-} catch (PDOException $e) {
-    repondreErreur('Connexion à la base impossible.', 500);
-}
+$pdo = bdd();
 
 $stmt = $pdo->prepare(
     'INSERT INTO utilisateurs (google_id, email, nom_affichage, photo_url, date_creation, derniere_connexion)
@@ -77,9 +68,9 @@ $stmt->execute([
     ':photo2' => $photo,
 ]);
 
-$idUtilisateur = $pdo->query(
-    'SELECT id FROM utilisateurs WHERE google_id = ' . $pdo->quote($googleId)
-)->fetchColumn();
+$stmt = $pdo->prepare('SELECT id FROM utilisateurs WHERE google_id = :gid');
+$stmt->execute([':gid' => $googleId]);
+$idUtilisateur = $stmt->fetchColumn();
 
 // --- 3. Ouvrir la session ---
 // Régénération de l'identifiant de session juste après l'authentification :

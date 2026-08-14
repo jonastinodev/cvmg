@@ -3,7 +3,7 @@
 // dans le formulaire). Vérifie que ce CV appartient bien à la personne connectée.
 
 require_once __DIR__ . '/exiger-connexion.php';
-require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/bdd.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -14,8 +14,7 @@ if (!$cvId) {
     exit;
 }
 
-$pdo = new PDO('mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4', DB_USER, DB_PASS,
-    [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+$pdo = bdd();
 
 $stmt = $pdo->prepare('SELECT titre, donnees_json FROM cv WHERE id = :id AND utilisateur_id = :uid');
 $stmt->execute([':id' => $cvId, ':uid' => $_SESSION['utilisateur_id']]);

@@ -4,10 +4,9 @@ if (empty($_SESSION['utilisateur_id'])) {
     header('Location: connexion.php');
     exit;
 }
-require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/bdd.php';
 
-$pdo = new PDO('mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4', DB_USER, DB_PASS,
-    [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+$pdo = bdd();
 $stmt = $pdo->prepare('SELECT id, titre, date_maj FROM cv WHERE utilisateur_id = :uid ORDER BY date_maj DESC');
 $stmt->execute([':uid' => $_SESSION['utilisateur_id']]);
 $mesCV = $stmt->fetchAll(PDO::FETCH_ASSOC);
