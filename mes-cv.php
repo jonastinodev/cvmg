@@ -5,9 +5,10 @@ if (empty($_SESSION['utilisateur_id'])) {
     exit;
 }
 require_once __DIR__ . '/bdd.php';
+require_once __DIR__ . '/cv-template.php';
 
 $pdo = bdd();
-$stmt = $pdo->prepare('SELECT id, titre, date_maj FROM cv WHERE utilisateur_id = :uid ORDER BY date_maj DESC');
+$stmt = $pdo->prepare('SELECT id, titre, date_maj, donnees_json FROM cv WHERE utilisateur_id = :uid ORDER BY date_maj DESC');
 $stmt->execute([':uid' => $_SESSION['utilisateur_id']]);
 $mesCV = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
@@ -49,16 +50,40 @@ $mesCV = $stmt->fetchAll(PDO::FETCH_ASSOC);
   .btn-orange { background: var(--orange); border-color: var(--orange); color: #0B1F3D; }
   .btn-orange:hover { background: var(--orange-fonce); }
 
-  .liste-cv { display: grid; gap: 4mm; grid-template-columns: 1fr; }
-  @media (min-width: 700px) { .liste-cv { grid-template-columns: 1fr 1fr; } }
+  /* Grille façon Google Docs/Drive : vignettes de taille fixe, le nombre de
+     colonnes s'adapte à la largeur disponible (pas de colonnes élastiques,
+     pour que la mise à l'échelle de la miniature ci-dessous reste exacte). */
+  .liste-cv { display: grid; gap: 5mm; grid-template-columns: repeat(auto-fill, 150px); }
+  @media (min-width: 700px) { .liste-cv { grid-template-columns: repeat(auto-fill, 180px); } }
 
-  .carte-cv { background: #fff; border: 1px solid #E4E7EB; border-radius: 3mm; padding: 6mm; }
-  .carte-cv h3 { font-family: 'Poppins', sans-serif; font-size: 12.5pt; color: var(--bleu-marine); margin-bottom: 1.5mm; }
-  .carte-cv .maj { font-size: 9pt; color: var(--gris-texte); margin-bottom: 4mm; }
-  .actions-cv { display: flex; gap: 2.5mm; flex-wrap: wrap; }
-  .actions-cv button, .actions-cv a { font-size: 9pt; padding: 2mm 3.5mm; border-radius: 1.6mm; border: 1px solid #DCE1E7;
+  .carte-cv { background: #fff; border: 1px solid #E4E7EB; border-radius: 3mm; overflow: hidden;
+    transition: transform .15s ease, box-shadow .15s ease; }
+  .carte-cv:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(11,31,61,.09); }
+  .carte-cv:focus-within { box-shadow: 0 0 0 2px var(--bleu); }
+
+  .cv-lien-ouvrir { display: block; }
+
+  /* Miniature : le CV réel est rendu dans un iframe à sa taille native (même
+     gabarit que le PDF), puis réduit visuellement via transform. On ne charge
+     rien en plus : mettre à l'échelle un iframe (au lieu de générer une image)
+     évite toute dépendance à GD/Imagick, indisponibles sur cet environnement. */
+  .cv-miniature { position: relative; width: 100%; aspect-ratio: 210 / 297; overflow: hidden;
+    background: #fff; border-bottom: 1px solid #E4E7EB; }
+  .cv-miniature iframe { position: absolute; top: 0; left: 0; width: 794px; height: 1123px;
+    border: 0; transform-origin: top left; transform: scale(0.1889); pointer-events: none; }
+  @media (min-width: 700px) {
+    .cv-miniature iframe { transform: scale(0.2267); }
+  }
+
+  .carte-cv-info { padding: 3.5mm 4mm 2.5mm; }
+  .carte-cv-info h3 { font-family: 'Poppins', sans-serif; font-size: 10.5pt; color: var(--bleu-marine);
+    margin-bottom: 1mm; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .carte-cv-info .maj { font-size: 8pt; color: var(--gris-texte); }
+
+  .actions-cv { display: flex; gap: 2mm; padding: 0 4mm 4mm; }
+  .actions-cv button { flex: 1; font-size: 8.5pt; padding: 1.8mm 2mm; border-radius: 1.6mm; border: 1px solid #DCE1E7;
     background: #fff; color: var(--texte); cursor: pointer; font-family: inherit; }
-  .actions-cv button:hover, .actions-cv a:hover { background: var(--gris-fond); }
+  .actions-cv button:hover { background: var(--gris-fond); }
   .actions-cv .supprimer { color: var(--rouge); border-color: #F3D2D6; }
 
   .etat-vide { text-align: center; padding: 16mm 4mm; color: var(--gris-texte); }
@@ -91,11 +116,18 @@ $mesCV = $stmt->fetchAll(PDO::FETCH_ASSOC);
   <?php else: ?>
     <div class="liste-cv">
       <?php foreach ($mesCV as $cv_item): ?>
+        <?php $donnees = json_decode($cv_item['donnees_json'], true) ?: []; ?>
         <div class="carte-cv" data-id="<?= (int)$cv_item['id'] ?>">
-          <h3><?= htmlspecialchars($cv_item['titre']) ?></h3>
-          <div class="maj">Modifié le <?= date('d/m/Y à H:i', strtotime($cv_item['date_maj'])) ?></div>
+          <a href="creer-cv.php?cv_id=<?= (int)$cv_item['id'] ?>" class="cv-lien-ouvrir">
+            <div class="cv-miniature">
+              <iframe srcdoc="<?= htmlspecialchars(genererCvHtml($donnees), ENT_QUOTES, 'UTF-8') ?>" tabindex="-1" aria-hidden="true"></iframe>
+            </div>
+            <div class="carte-cv-info">
+              <h3><?= htmlspecialchars($cv_item['titre']) ?></h3>
+              <div class="maj">Modifié le <?= date('d/m/Y à H:i', strtotime($cv_item['date_maj'])) ?></div>
+            </div>
+          </a>
           <div class="actions-cv">
-            <a href="creer-cv.php?cv_id=<?= (int)$cv_item['id'] ?>">Modifier</a>
             <button type="button" class="btn-dupliquer">Dupliquer</button>
             <button type="button" class="supprimer">Supprimer</button>
           </div>
