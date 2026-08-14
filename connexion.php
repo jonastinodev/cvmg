@@ -78,6 +78,12 @@
       if (!res.ok || !data || data.erreur) {
         throw new Error((data && data.erreur) || `Erreur serveur (HTTP ${res.status})`);
       }
+      // On efface le brouillon local avant de rediriger : sans ça, un ancien
+      // brouillon (rempli avant connexion, ou laissé par une autre personne
+      // sur un appareil partagé) réapparaîtrait dans le formulaire au lieu de
+      // repartir d'un état propre.
+      localStorage.removeItem('cvmg_brouillon');
+
       statut.textContent = 'Connecté — redirection...';
       statut.className = 'chargement';
       window.location.href = 'creer-cv.php';
