@@ -17,10 +17,16 @@ DirectoryIndex accueil.html index.php index.html
 </IfModule>
 
 # --- Compression (réduit fortement le poids texte) ---
+# AddOutputFilterByType dépend de mod_filter, pas seulement de mod_deflate :
+# sur cette install XAMPP, mod_filter est désactivé dans httpd.conf, donc le
+# double IfModule est nécessaire pour ne pas casser le site si l'un des deux
+# modules manque.
 <IfModule mod_deflate.c>
-  AddOutputFilterByType DEFLATE text/html text/css text/plain
-  AddOutputFilterByType DEFLATE application/javascript application/json
-  AddOutputFilterByType DEFLATE image/svg+xml
+  <IfModule mod_filter.c>
+    AddOutputFilterByType DEFLATE text/html text/css text/plain
+    AddOutputFilterByType DEFLATE application/javascript application/json
+    AddOutputFilterByType DEFLATE image/svg+xml
+  </IfModule>
 </IfModule>
 
 # --- Cache navigateur ---
