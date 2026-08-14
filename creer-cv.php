@@ -9,7 +9,7 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Créer mon CV — CVMG</title>
+<title>Créer mon CV CVMG</title>
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#1863F2">
 <style>
@@ -76,10 +76,10 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
 
   .btn { font-family: inherit; font-size: 10.5pt; font-weight: 600; padding: 3.2mm 6mm; border-radius: 2mm;
     border: none; cursor: pointer; }
-  .btn-principal { background: var(--app-orange); color: #fff; }
+  .btn-principal { background: var(--app-orange); color: #0B1F3D; }
   .btn-principal:hover { background: var(--app-orange-fonce); }
   .btn-secondaire { background: #fff; color: var(--app-bleu); border: 1.5px solid var(--app-bleu); }
-  .btn-valider { background: var(--app-orange); color: #fff; }
+  .btn-valider { background: var(--app-orange); color: #0B1F3D; }
   .btn-lien { background: none; color: var(--app-bleu); text-decoration: underline; padding: 2mm 0; }
   .btn-supprimer { background: none; color: var(--app-rouge); font-size: 9pt; text-decoration: underline; padding: 1mm 0; }
   .btn:disabled { opacity: .5; cursor: not-allowed; }
@@ -298,11 +298,11 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
         <h2 class="titre-etape">Vos compétences</h2>
         <p class="sous-titre">Tapez une compétence puis appuyez sur Entrée pour l'ajouter.</p>
 
-        <label>Compétences techniques</label>
+        <label for="saisieCompetence">Compétences techniques</label>
         <div class="tags-zone" id="zoneCompetences"><input type="text" id="saisieCompetence" placeholder="Ex : Vente, Cuisine, Conduite..."></div>
         <div class="suggestions" id="suggestionsCompetences"></div>
 
-        <label style="margin-top:6mm">Qualités personnelles</label>
+        <label for="saisieQualite" style="margin-top:6mm">Qualités personnelles</label>
         <div class="tags-zone" id="zoneQualites"><input type="text" id="saisieQualite" placeholder="Ex : Ponctuel, Motivé, Rigoureux..."></div>
 
         <label style="margin-top:6mm">Langues parlées</label>
@@ -315,7 +315,7 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
         <h2 class="titre-etape">Informations complémentaires</h2>
         <p class="sous-titre">Tout est facultatif — ne remplissez que ce qui vous concerne.</p>
 
-        <label>Centres d'intérêt</label>
+        <label for="saisieInteret">Centres d'intérêt</label>
         <div class="tags-zone" id="zoneInterets"><input type="text" id="saisieInteret" placeholder="Ex : Football, Couture, Lecture..."></div>
 
         <label for="disponibilite">Disponibilité</label>
@@ -352,7 +352,7 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
 </div>
 
 <div class="modale-apercu-fond" id="modaleApercuFond">
-  <div class="modale-apercu-boite">
+  <div class="modale-apercu-boite" role="dialog" aria-modal="true" aria-label="Aperçu du CV">
     <div class="modale-apercu-entete">
       <strong>Votre CV</strong>
       <button type="button" id="btnFermerApercu" aria-label="Fermer">✕</button>
@@ -374,7 +374,7 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
 </div>
 
 <div class="modale-cin-fond" id="modaleCinFond">
-  <div class="modale-cin">
+  <div class="modale-cin" role="dialog" aria-modal="true" aria-label="Scanner ma carte d'identité">
     <div class="cin-entete">
       <img src="media/drapeau-madagascar.png" alt="MG" class="cin-drapeau" onerror="this.style.display='none'">
       <h3>Kara-panondrom-pirenena</h3>
@@ -997,6 +997,16 @@ function fermerApercu() { modaleApercuFond.classList.remove('ouverte'); }
 document.getElementById('btnFermerApercu').addEventListener('click', fermerApercu);
 document.getElementById('btnCorriger').addEventListener('click', fermerApercu);
 window.addEventListener('resize', () => { if (modaleApercuFond.classList.contains('ouverte')) ajusterEchelleApercu(); });
+
+// Accessibilité des modales : fermeture au clavier (Échap) et au clic sur le fond.
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  if (modaleApercuFond.classList.contains('ouverte')) fermerApercu();
+  const cinFond = document.getElementById('modaleCinFond');
+  if (cinFond && cinFond.classList.contains('ouverte')) fermerModaleCin();
+});
+modaleApercuFond.addEventListener('click', (e) => { if (e.target === modaleApercuFond) fermerApercu(); });
+document.getElementById('modaleCinFond').addEventListener('click', (e) => { if (e.target.id === 'modaleCinFond') fermerModaleCin(); });
 
 // ===================== TÉLÉCHARGEMENT FINAL =====================
 document.getElementById('btnTelecharger').addEventListener('click', async () => {

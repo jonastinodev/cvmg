@@ -16,7 +16,7 @@ $mesCV = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mes CV — CVMG</title>
+<title>Mes CV CVMG</title>
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#1863F2">
 <style>
@@ -46,7 +46,7 @@ $mesCV = $stmt->fetchAll(PDO::FETCH_ASSOC);
     padding: 3mm 6mm; border-radius: 2mm; border: 1.5px solid transparent; cursor: pointer; text-decoration: none;
     transition: background .15s ease, transform .15s ease; }
   .btn:hover { transform: translateY(-1px); }
-  .btn-orange { background: var(--orange); border-color: var(--orange); color: #fff; }
+  .btn-orange { background: var(--orange); border-color: var(--orange); color: #0B1F3D; }
   .btn-orange:hover { background: var(--orange-fonce); }
 
   .liste-cv { display: grid; gap: 4mm; grid-template-columns: 1fr; }
