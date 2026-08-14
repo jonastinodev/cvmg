@@ -47,9 +47,12 @@
   nav { display: flex; align-items: center; justify-content: space-between; padding: 5mm 0; }
   .nav-logo { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 15pt; color: var(--bleu-marine); }
   .nav-logo span { color: var(--orange); }
-  .nav-liens { display: none; gap: 6mm; font-weight: 600; font-size: 10pt; }
+  /* Les boutons d'action restent visibles à toutes les tailles ; seuls les
+     liens texte secondaires sont masqués sur mobile (pas de menu burger requis). */
+  .nav-liens { display: flex; align-items: center; gap: 3mm; font-weight: 600; font-size: 10pt; }
+  .nav-liens > a:not(.btn) { display: none; }
   .nav-liens a:not(.btn):hover { color: var(--bleu); }
-  @media (min-width: 800px) { .nav-liens { display: flex; align-items: center; } }
+  @media (min-width: 800px) { .nav-liens { gap: 6mm; } .nav-liens > a:not(.btn) { display: inline; } }
 
   /* ===== Hero ===== */
   .hero { padding: 8mm 0 14mm; }

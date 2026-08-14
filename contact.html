@@ -22,10 +22,11 @@
   nav { display: flex; align-items: center; justify-content: space-between; padding: 5mm 0; }
   .nav-logo { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 15pt; color: var(--bleu-marine); text-decoration: none; }
   .nav-logo span { color: var(--orange); }
-  .nav-liens { display: none; gap: 6mm; font-weight: 600; font-size: 10pt; }
+  .nav-liens { display: flex; align-items: center; gap: 3mm; font-weight: 600; font-size: 10pt; }
+  .nav-liens > a:not(.btn) { display: none; }
   .nav-liens a:not(.btn) { text-decoration: none; }
   .nav-liens a:not(.btn):hover { color: var(--bleu); }
-  @media (min-width: 800px) { .nav-liens { display: flex; align-items: center; } }
+  @media (min-width: 800px) { .nav-liens { gap: 6mm; } .nav-liens > a:not(.btn) { display: inline; } }
 
   main { padding: 10mm 0 16mm; }
   main h1 { font-size: 24pt; margin-bottom: 3mm; }
