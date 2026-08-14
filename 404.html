@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Page introuvable — CVMG</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700;800&family=Inter:wght@400;600&display=swap');
+  :root { --bleu:#1863F2; --bleu-marine:#0B1F3D; --orange:#F7941D; --gris-texte:#5B6472; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Inter',Arial,sans-serif; color:var(--bleu-marine);
+    min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:8vw; gap:1.2rem; }
+  .code { font-family:'Poppins',sans-serif; font-weight:800; font-size:4rem; color:var(--bleu); line-height:1; }
+  h1 { font-family:'Poppins',sans-serif; font-size:1.4rem; }
+  p { color:var(--gris-texte); max-width:36ch; }
+  .liens { display:flex; gap:.8rem; flex-wrap:wrap; justify-content:center; margin-top:.6rem; }
+  a { font-weight:700; text-decoration:none; padding:.7rem 1.4rem; border-radius:.4rem; }
+  .principal { background:var(--orange); color:#fff; }
+  .secondaire { border:1.5px solid var(--bleu); color:var(--bleu); }
+</style>
+</head>
+<body>
+  <div class="code">404</div>
+  <h1>Cette page n'existe pas</h1>
+  <p>Le lien est peut-être erroné ou la page a été déplacée.</p>
+  <div class="liens">
+    <a href="/accueil.html" class="principal">Retour à l'accueil</a>
+    <a href="/creer-cv.php" class="secondaire">Créer mon CV</a>
+  </div>
+</body>
+</html>

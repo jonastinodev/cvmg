@@ -1,6 +1,6 @@
 <?php
 // deconnexion.php — Ferme la session et renvoie vers l'accueil.
-session_start();
+require_once __DIR__ . '/session.php';
 $_SESSION = [];
 session_destroy();
 header('Location: accueil.html');

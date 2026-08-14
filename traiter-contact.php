@@ -32,7 +32,12 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     repondreErreur('Adresse e-mail invalide.');
 }
 
-$sujet = 'Nouveau message CVMG — de ' . $nom;
+// On neutralise tout retour à la ligne dans le nom avant de l'insérer dans le
+// sujet : sans ça, un nom contenant des en-têtes (« ...\r\nBcc: victime@... »)
+// transformerait mail() en relais de spam (injection d'en-têtes).
+$nomEntete = mb_substr(str_replace(["\r", "\n"], ' ', $nom), 0, 100);
+
+$sujet = 'Nouveau message CVMG — de ' . $nomEntete;
 $corps = "Nom : $nom\nE-mail : $email\n\nMessage :\n$message";
 $entetes = "From: CVMG <no-reply@cvmg.mg>\r\nReply-To: $email\r\nContent-Type: text/plain; charset=UTF-8";
 

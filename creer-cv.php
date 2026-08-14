@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once __DIR__ . '/session.php';
 $estConnecte = !empty($_SESSION['utilisateur_id']);
 $nomUtilisateur = $estConnecte ? $_SESSION['utilisateur_nom'] : null;
 $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
@@ -12,6 +12,7 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
 <title>Créer mon CV — CVMG</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined');
   :root {
     /* Thème de l'application (nouveau, bleu vif + orange) */
     --app-bleu: #1863F2; --app-bleu-fonce: #0B1F3D; --app-bleu-clair: #EAF2FF;
@@ -123,8 +124,9 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
 
   /* ===================== MODALE SCAN CIN ===================== */
   /* Portage fidèle de index.html (import) + ocr.html (vérification),
-     isolé sous --cin-* / .cin-* pour ne pas interférer avec le thème CVMG. */
-  @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined');
+     isolé sous --cin-* / .cin-* pour ne pas interférer avec le thème CVMG.
+     (La police d'icônes Material Symbols est importée en tête de feuille : un
+      @import doit précéder toute règle CSS, sinon le navigateur l'ignore.) */
 
   .modale-cin-fond {
     position: fixed; inset: 0; background: rgba(28,27,31,.55); z-index: 50;
@@ -917,6 +919,7 @@ function construireDonneesCV() {
     personnel: {
       nom: p.nom, prenom: p.prenom, titre_professionnel: p.titrePro, profil_court: p.profilCourt,
       telephone: p.telephone, email: p.email, ville: p.ville,
+      adresse: p.adresse, date_naissance: p.dateNaissance,
       permis_conduire: p.permis === 'oui',
     },
     experiences: cv.sansExperience ? [] : cv.experiences.map(e => ({
@@ -1058,7 +1061,8 @@ async function chargerCVExistant(id) {
     Object.assign(cv.personnel, {
       nom: d.personnel.nom, prenom: d.personnel.prenom, titrePro: d.personnel.titre_professionnel,
       profilCourt: d.personnel.profil_court, telephone: d.personnel.telephone, email: d.personnel.email,
-      ville: d.personnel.ville, permis: d.personnel.permis_conduire ? 'oui' : '',
+      ville: d.personnel.ville, adresse: d.personnel.adresse, dateNaissance: d.personnel.date_naissance,
+      permis: d.personnel.permis_conduire ? 'oui' : '',
     });
     champsPersonnel.forEach(cle => { const el = document.getElementById(cle === 'titrePro' ? 'titrePro' : cle === 'profilCourt' ? 'profilCourt' : cle); if (el) el.value = cv.personnel[cle] || ''; });
 

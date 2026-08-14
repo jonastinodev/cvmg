@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once __DIR__ . '/session.php';
 if (empty($_SESSION['utilisateur_id'])) {
     header('Location: connexion.php');
     exit;

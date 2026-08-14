@@ -71,8 +71,7 @@ Extrait UNIQUEMENT les champs suivants et réponds avec UN SEUL objet JSON valid
   "prenom": "",
   "dateNaissance": "",
   "lieuNaissance": "",
-  "adresse": "",
-  "numero": ""
+  "adresse": ""
 }
 
 Règles :
@@ -81,7 +80,6 @@ Règles :
 - "dateNaissance" : TERAKA TAMIN'NY, au format AAAA-MM-JJ (convertis le format si besoin).
 - "lieuNaissance" : lieu de naissance (TAO/a). Corrige les fautes de frappe/OCR évidentes et écris le nom de la localité malgache en majuscules (ex: "foanarantsoa" -> "FIANARANTSOA").
 - "adresse" : FONENANA, adresse actuelle si présente sur la carte.
-- "numero" : Laharana / N° CIN, 12 chiffres.
 - Si un champ est illisible ou absent, mets une chaîne vide "".
 - Ne renvoie rien d'autre que ce JSON.
 TXT;
@@ -148,5 +146,4 @@ echo json_encode([
     'dateNaissance'  => normaliserDate($donnees['dateNaissance'] ?? ''),
     'lieuNaissance'  => $donnees['lieuNaissance'] ?? '',
     'adresse'        => $donnees['adresse'] ?? '',
-    'numero'         => $donnees['numero'] ?? '',
 ], JSON_UNESCAPED_UNICODE);

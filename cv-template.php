@@ -118,6 +118,8 @@ function genererCvHtml(array $cv): string {
             <?php if (!empty($p['telephone'])): ?><span><b>Tél :</b> <?= e($p['telephone']) ?></span><?php endif; ?>
             <?php if (!empty($p['email'])): ?><span><b>Email :</b> <?= e($p['email']) ?></span><?php endif; ?>
             <?php if (!empty($p['ville'])): ?><span><b>Ville :</b> <?= e($p['ville']) ?></span><?php endif; ?>
+            <?php if (!empty($p['adresse'])): ?><span><b>Adresse :</b> <?= e($p['adresse']) ?></span><?php endif; ?>
+            <?php if (!empty($p['date_naissance'])): ?><span><b>Né(e) le :</b> <?= e($p['date_naissance']) ?></span><?php endif; ?>
             <?php if (!empty($p['permis_conduire'])): ?><span><b>Permis :</b> Oui</span><?php endif; ?>
           </div>
         </div>

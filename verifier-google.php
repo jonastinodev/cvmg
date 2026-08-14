@@ -6,7 +6,7 @@
 // Pas de dépendance Composer nécessaire ici : on interroge Google directement
 // en curl, comme pour Gemini dans ocr.php.
 
-session_start();
+require_once __DIR__ . '/session.php';
 require_once __DIR__ . '/config.php';
 
 header('Content-Type: application/json; charset=utf-8');
@@ -82,6 +82,11 @@ $idUtilisateur = $pdo->query(
 )->fetchColumn();
 
 // --- 3. Ouvrir la session ---
+// Régénération de l'identifiant de session juste après l'authentification :
+// empêche la fixation de session (un identifiant fixé avant connexion devient
+// inutilisable une fois la personne authentifiée).
+session_regenerate_id(true);
+
 $_SESSION['utilisateur_id'] = $idUtilisateur;
 $_SESSION['utilisateur_email'] = $email;
 $_SESSION['utilisateur_nom'] = $nom;

@@ -4,7 +4,10 @@
       "Bash(grep -n \"^\\\\s*//\\\\s*---\\\\|^<script\\\\|^</script>\\\\|^<style\\\\|^</style>\\\\|function [a-zA-Z]\" creer-cv.php)",
       "Bash(git init *)",
       "Bash(git config *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit -q -m '@ *)",
+      "Bash(git commit *)",
+      "Bash(git commit -q -m 'Correctifs immédiats: perte de données, sécurité, session, htaccess' -m '- creer-cv/cv-template: adresse + date de naissance propagées jusqu'\\\\''au PDF/aperçu \\(saisies mais jamais rendues auparavant\\). *)"
     ]
   }
 }
