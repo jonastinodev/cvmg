@@ -1,3 +1,7 @@
+<?php
+require_once __DIR__ . '/session.php';
+$estConnecte = !empty($_SESSION['utilisateur_id']);
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -7,12 +11,12 @@
 <meta name="description" content="Politique de confidentialité de CVMG : données personnelles, scan de carte d'identité, comptes et durée de conservation.">
 <meta name="robots" content="index, follow">
 <!-- Remplacer cvmg.mg par le domaine réel si différent -->
-<link rel="canonical" href="https://cvmg.mg/confidentialite.html">
+<link rel="canonical" href="https://cvmg.mg/confidentialite.php">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="CVMG">
 <meta property="og:locale" content="fr_FR">
 <meta property="og:title" content="Confidentialité — CVMG">
-<meta property="og:url" content="https://cvmg.mg/confidentialite.html">
+<meta property="og:url" content="https://cvmg.mg/confidentialite.php">
 <meta name="theme-color" content="#1863F2">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap');
@@ -68,10 +72,14 @@
 
 <div class="enveloppe">
   <nav>
-    <a href="accueil.html" class="nav-logo">CV<span>MG</span></a>
+    <a href="accueil.php" class="nav-logo">CV<span>MG</span></a>
     <div class="nav-liens">
-      <a href="accueil.html#comment-ca-marche">Comment ça marche</a>
-      <a href="connexion.php" class="btn btn-sm btn-outline">Se connecter</a>
+      <a href="accueil.php#comment-ca-marche">Comment ça marche</a>
+      <?php if ($estConnecte): ?>
+        <a href="mes-cv.php" class="btn btn-sm btn-outline">Mes CV</a>
+      <?php else: ?>
+        <a href="connexion.php" class="btn btn-sm btn-outline">Se connecter</a>
+      <?php endif; ?>
       <a href="creer-cv.php" class="btn btn-sm btn-orange">Créer mon CV</a>
     </div>
   </nav>
@@ -107,17 +115,17 @@
   <p>Conformément à la loi malgache sur la protection des données personnelles, vous disposez d'un droit d'accès, de rectification, de suppression et d'opposition concernant vos données. En mode invité, vous les maîtrisez directement en vidant les données de votre navigateur. Avec un compte, vous pouvez supprimer chaque CV depuis la page « Mes CV » ; pour supprimer l'intégralité de votre compte et des données associées, contactez-nous via la page Contact.</p>
 
   <h2>6. Nous contacter</h2>
-  <p>Pour toute question sur cette politique, rendez-vous sur notre page <a href="contact.html" class="lien">Contact</a>.</p>
+  <p>Pour toute question sur cette politique, rendez-vous sur notre page <a href="contact.php" class="lien">Contact</a>.</p>
 </main>
 
 <footer>
   <div class="enveloppe footer-grille">
-    <a href="accueil.html" class="nav-logo" style="font-size:12pt">CV<span>MG</span></a>
+    <a href="accueil.php" class="nav-logo" style="font-size:12pt">CV<span>MG</span></a>
     <div class="footer-liens">
-      <a href="apropos.html">À propos</a>
-      <a href="contact.html" class="lien">Contact</a>
-      <a href="confidentialite.html">Confidentialité</a>
-      <a href="conditions.html">Conditions d'utilisation</a>
+      <a href="apropos.php">À propos</a>
+      <a href="contact.php" class="lien">Contact</a>
+      <a href="confidentialite.php">Confidentialité</a>
+      <a href="conditions.php">Conditions d'utilisation</a>
     </div>
   </div>
 </footer>

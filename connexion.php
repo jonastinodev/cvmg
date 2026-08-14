@@ -36,7 +36,7 @@
 
 <div class="enveloppe">
   <nav>
-    <a href="accueil.html" class="nav-logo">CV<span>MG</span></a>
+    <a href="accueil.php" class="nav-logo">CV<span>MG</span></a>
   </nav>
 </div>
 

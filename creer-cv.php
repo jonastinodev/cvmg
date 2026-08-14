@@ -206,7 +206,7 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
 
 <div class="entete">
   <div class="entete-interieur">
-    <a href="accueil.html" class="logo">CV<span>MG</span></a>
+    <a href="accueil.php" class="logo">CV<span>MG</span></a>
     <?php if ($estConnecte): ?>
       <div class="compte">
         <span class="compte-pastille"><?= htmlspecialchars(mb_strtoupper(mb_substr($nomUtilisateur, 0, 1))) ?></span>

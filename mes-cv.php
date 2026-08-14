@@ -69,7 +69,7 @@ $mesCV = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <div class="enveloppe">
   <nav>
-    <a href="accueil.html" class="nav-logo">CV<span>MG</span></a>
+    <a href="accueil.php" class="nav-logo">CV<span>MG</span></a>
     <div class="nav-droite">
       <span class="nav-nom">Bonjour, <?= htmlspecialchars($_SESSION['utilisateur_nom']) ?></span>
       <a href="deconnexion.php">Se déconnecter</a>

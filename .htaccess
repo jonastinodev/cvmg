@@ -3,9 +3,8 @@
 # ==========================================================================
 
 # --- Page d'accueil ---
-# On sert accueil.html à la racine du domaine (et NON l'ancien index.html,
-# qui est le scanner CIN historique, hors sujet pour le référencement).
-DirectoryIndex accueil.html index.php index.html
+# On sert accueil.php à la racine du domaine.
+DirectoryIndex accueil.php index.php
 
 # --- En-têtes de sécurité ---
 <IfModule mod_headers.c>

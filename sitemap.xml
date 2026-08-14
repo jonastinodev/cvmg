@@ -7,22 +7,22 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://cvmg.mg/apropos.html</loc>
+    <loc>https://cvmg.mg/apropos.php</loc>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://cvmg.mg/contact.html</loc>
+    <loc>https://cvmg.mg/contact.php</loc>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://cvmg.mg/confidentialite.html</loc>
+    <loc>https://cvmg.mg/confidentialite.php</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://cvmg.mg/conditions.html</loc>
+    <loc>https://cvmg.mg/conditions.php</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>

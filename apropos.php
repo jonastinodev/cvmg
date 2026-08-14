@@ -1,3 +1,7 @@
+<?php
+require_once __DIR__ . '/session.php';
+$estConnecte = !empty($_SESSION['utilisateur_id']);
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -6,13 +10,13 @@
 <title>À propos CVMG</title>
 <meta name="description" content="CVMG aide chacun à Madagascar à créer un CV clair et professionnel, gratuitement, même sans expérience ni diplôme.">
 <!-- Remplacer cvmg.mg par le domaine réel si différent -->
-<link rel="canonical" href="https://cvmg.mg/apropos.html">
+<link rel="canonical" href="https://cvmg.mg/apropos.php">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="CVMG">
 <meta property="og:locale" content="fr_FR">
 <meta property="og:title" content="À propos de CVMG">
 <meta property="og:description" content="CVMG aide chacun à Madagascar à créer un CV clair et professionnel, gratuitement.">
-<meta property="og:url" content="https://cvmg.mg/apropos.html">
+<meta property="og:url" content="https://cvmg.mg/apropos.php">
 <meta name="twitter:card" content="summary">
 <meta name="theme-color" content="#1863F2">
 <style>
@@ -70,10 +74,14 @@
 
 <div class="enveloppe">
   <nav>
-    <a href="accueil.html" class="nav-logo">CV<span>MG</span></a>
+    <a href="accueil.php" class="nav-logo">CV<span>MG</span></a>
     <div class="nav-liens">
-      <a href="accueil.html#comment-ca-marche">Comment ça marche</a>
-      <a href="connexion.php" class="btn btn-sm btn-outline">Se connecter</a>
+      <a href="accueil.php#comment-ca-marche">Comment ça marche</a>
+      <?php if ($estConnecte): ?>
+        <a href="mes-cv.php" class="btn btn-sm btn-outline">Mes CV</a>
+      <?php else: ?>
+        <a href="connexion.php" class="btn btn-sm btn-outline">Se connecter</a>
+      <?php endif; ?>
       <a href="creer-cv.php" class="btn btn-sm btn-orange">Créer mon CV</a>
     </div>
   </nav>
@@ -96,7 +104,7 @@
   <p>CVMG est gratuit pour les personnes qui créent leur CV. Ça ne changera pas c'est la raison d'être du projet.</p>
 
   <div class="encart">
-    <p style="margin:0"><strong>Une question, une suggestion ?</strong> Rendez-vous sur notre page <a href="contact.html" class="lien">Contact</a>.</p>
+    <p style="margin:0"><strong>Une question, une suggestion ?</strong> Rendez-vous sur notre page <a href="contact.php" class="lien">Contact</a>.</p>
   </div>
 
   <div style="margin-top:10mm">
@@ -106,12 +114,12 @@
 
 <footer>
   <div class="enveloppe footer-grille">
-    <a href="accueil.html" class="nav-logo" style="font-size:12pt">CV<span>MG</span></a>
+    <a href="accueil.php" class="nav-logo" style="font-size:12pt">CV<span>MG</span></a>
     <div class="footer-liens">
-      <a href="apropos.html">À propos</a>
-      <a href="contact.html" class="lien">Contact</a>
-      <a href="confidentialite.html">Confidentialité</a>
-      <a href="conditions.html">Conditions d'utilisation</a>
+      <a href="apropos.php">À propos</a>
+      <a href="contact.php" class="lien">Contact</a>
+      <a href="confidentialite.php">Confidentialité</a>
+      <a href="conditions.php">Conditions d'utilisation</a>
     </div>
   </div>
 </footer>

@@ -1,3 +1,7 @@
+<?php
+require_once __DIR__ . '/session.php';
+$estConnecte = !empty($_SESSION['utilisateur_id']);
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -168,7 +172,11 @@
     <div class="nav-logo">CV<span>MG</span></div>
     <div class="nav-liens">
       <a href="#comment-ca-marche">Comment ça marche</a>
-      <a href="connexion.php" class="btn btn-sm btn-outline">Se connecter</a>
+      <?php if ($estConnecte): ?>
+        <a href="mes-cv.php" class="btn btn-sm btn-outline">Mes CV</a>
+      <?php else: ?>
+        <a href="connexion.php" class="btn btn-sm btn-outline">Se connecter</a>
+      <?php endif; ?>
       <a href="creer-cv.php" class="btn btn-sm btn-orange">Créer mon CV</a>
     </div>
   </nav>
@@ -274,10 +282,10 @@
   <div class="enveloppe footer-grille">
     <div class="nav-logo" style="font-size:12pt">CV<span>MG</span></div>
     <div class="footer-liens">
-      <a href="apropos.html">À propos</a>
-      <a href="contact.html">Contact</a>
-      <a href="confidentialite.html">Confidentialité</a>
-      <a href="conditions.html">Conditions d'utilisation</a>
+      <a href="apropos.php">À propos</a>
+      <a href="contact.php">Contact</a>
+      <a href="confidentialite.php">Confidentialité</a>
+      <a href="conditions.php">Conditions d'utilisation</a>
     </div>
   </div>
 </footer>

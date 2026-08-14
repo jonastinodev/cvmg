@@ -3,5 +3,5 @@
 require_once __DIR__ . '/session.php';
 $_SESSION = [];
 session_destroy();
-header('Location: accueil.html');
+header('Location: accueil.php');
 exit;
