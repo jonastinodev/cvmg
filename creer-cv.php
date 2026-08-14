@@ -95,6 +95,31 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
 
   .message-positif { background: #FFF4E8; border-left: 3px solid var(--app-orange); padding: 3.5mm; border-radius: 1mm; font-size: 9.5pt; margin-top: 4mm; }
 
+  /* ===== Photo de profil ===== */
+  .zone-photo { display: flex; align-items: center; gap: 4mm; margin-top: 4mm; }
+  .photo-apercu { width: 20mm; height: 20mm; border-radius: 50%; background: var(--app-bleu-clair);
+    display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;
+    color: var(--app-bleu); font-weight: 700; font-size: 11pt; border: 1.5px solid #E4E7EB; }
+  .photo-apercu img { width: 100%; height: 100%; object-fit: cover; }
+  .photo-boutons { display: flex; flex-wrap: wrap; gap: 2mm; }
+  .photo-boutons button { font-size: 9pt; padding: 2mm 4mm; }
+
+  /* ===== Sélecteur de modèle de CV ===== */
+  .zone-modeles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2.5mm; margin: 3mm 0 5mm; }
+  @media (min-width: 480px) { .zone-modeles { grid-template-columns: repeat(4, 1fr); } }
+  .carte-modele { border: 1.5px solid #E4E7EB; border-radius: 2mm; padding: 2.5mm; cursor: pointer;
+    background: #fff; text-align: center; transition: border-color .15s ease; }
+  .carte-modele:hover { border-color: var(--app-bleu); }
+  .carte-modele.actif { border-color: var(--app-bleu); border-width: 2px; background: var(--app-bleu-clair); }
+  .carte-modele .vignette { height: 14mm; border-radius: 1mm; margin-bottom: 1.5mm; display: flex; overflow: hidden; }
+  .carte-modele .vignette .bande { width: 35%; }
+  .carte-modele .vignette .reste { flex: 1; background: #fff; }
+  .carte-modele .nom-modele { font-size: 8pt; font-weight: 600; color: var(--texte); }
+  .modele-classique .bande { background: #1B3A6B; }
+  .modele-bleu-marine .bande { background: #17325C; }
+  .modele-olive .bande { background: #6F8158; }
+  .modele-ocre .bande { background: #BFA046; }
+
   .tags-zone { display: flex; flex-wrap: wrap; gap: 2mm; padding: 2mm; border: 1.5px solid #DCE1E7; border-radius: 2mm; }
   .tag-pilule { background: var(--app-bleu-clair); padding: 1.5mm 2.5mm; border-radius: 1mm; font-size: 9.5pt; display: flex; align-items: center; gap: 1.5mm; }
   .tag-pilule button { background: none; border: none; color: var(--gris-texte); cursor: pointer; font-size: 10pt; line-height: 1; }
@@ -235,7 +260,41 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
         <p class="aide" id="scanStatut"></p>
         <p class="aide" style="color:var(--app-orange)" id="scanConfirmation"></p>
 
+        <label>Photo <span class="facultatif">(facultatif)</span></label>
+        <div class="zone-photo">
+          <div class="photo-apercu" id="photoApercu">
+            <span id="photoInitiales"></span>
+            <img id="photoImg" style="display:none" alt="">
+          </div>
+          <div class="photo-boutons">
+            <button type="button" class="btn btn-secondaire" id="btnChoisirPhoto">Choisir une photo</button>
+            <button type="button" class="btn btn-lien hidden" id="btnRetirerPhoto">Retirer</button>
+            <input type="file" id="photoFichier" accept="image/*" hidden>
+          </div>
+        </div>
+        <p class="aide" id="photoStatut"></p>
+
         <p class="legende-requis">Les champs marqués d'un <span>*</span> sont obligatoires.</p>
+
+        <label>Modèle de CV</label>
+        <div class="zone-modeles" id="zoneModeles">
+          <div class="carte-modele modele-classique" data-modele="classique" role="button" tabindex="0" aria-pressed="false" aria-label="Modèle Classique">
+            <div class="vignette"><div class="bande"></div><div class="reste"></div></div>
+            <div class="nom-modele">Classique</div>
+          </div>
+          <div class="carte-modele modele-bleu-marine" data-modele="bleu-marine" role="button" tabindex="0" aria-pressed="false" aria-label="Modèle Bleu marine">
+            <div class="vignette"><div class="bande"></div><div class="reste"></div></div>
+            <div class="nom-modele">Bleu marine</div>
+          </div>
+          <div class="carte-modele modele-olive" data-modele="olive" role="button" tabindex="0" aria-pressed="false" aria-label="Modèle Olive">
+            <div class="vignette"><div class="bande"></div><div class="reste"></div></div>
+            <div class="nom-modele">Olive</div>
+          </div>
+          <div class="carte-modele modele-ocre" data-modele="ocre" role="button" tabindex="0" aria-pressed="false" aria-label="Modèle Ocre">
+            <div class="vignette"><div class="bande"></div><div class="reste"></div></div>
+            <div class="nom-modele">Ocre</div>
+          </div>
+        </div>
 
         <div class="ligne-2">
           <div><label for="nom">Nom <span class="requis">*</span></label><input type="text" id="nom" required placeholder="Ex : RAKOTO"></div>
@@ -453,7 +512,8 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
 const CLE_LOCALE = 'cvmg_brouillon';
 
 let cv = {
-  personnel: { nom:'', prenom:'', titrePro:'', profilCourt:'', telephone:'', email:'', ville:'', adresse:'', dateNaissance:'', permis:'' },
+  modele: 'classique',
+  personnel: { nom:'', prenom:'', titrePro:'', profilCourt:'', telephone:'', email:'', ville:'', adresse:'', dateNaissance:'', permis:'', photo:'' },
   sansExperience: false,
   experiences: [],
   formations: [],
@@ -547,6 +607,8 @@ function lierChamp(id, cle, objet) {
 }
 lierChamp('nom', 'nom', cv.personnel);
 lierChamp('prenom', 'prenom', cv.personnel);
+document.getElementById('nom').addEventListener('input', () => majApercuPhoto());
+document.getElementById('prenom').addEventListener('input', () => majApercuPhoto());
 lierChamp('titrePro', 'titrePro', cv.personnel);
 lierChamp('profilCourt', 'profilCourt', cv.personnel);
 lierChamp('telephone', 'telephone', cv.personnel);
@@ -555,6 +617,102 @@ lierChamp('ville', 'ville', cv.personnel);
 lierChamp('adresse', 'adresse', cv.personnel);
 lierChamp('dateNaissance', 'dateNaissance', cv.personnel);
 lierChamp('permis', 'permis', cv.personnel);
+
+// --- Photo de profil : redimensionnée et recadrée en carré côté navigateur
+// (canvas), puis stockée directement en data URI dans le CV. Pas d'envoi au
+// serveur ni de stockage de fichier séparé : ça reste cohérent avec le reste
+// de l'app (tout est dans donnees_json), et ça évite d'avoir à gérer un
+// dossier d'upload. La compression garde le poids raisonnable même si la
+// photo d'origine vient d'un téléphone (plusieurs Mo). ---
+const photoApercu = document.getElementById('photoApercu');
+const photoInitialesEl = document.getElementById('photoInitiales');
+const photoImgEl = document.getElementById('photoImg');
+const btnRetirerPhoto = document.getElementById('btnRetirerPhoto');
+
+function majApercuPhoto() {
+  if (cv.personnel.photo) {
+    photoImgEl.src = cv.personnel.photo;
+    photoImgEl.style.display = 'block';
+    photoInitialesEl.style.display = 'none';
+    btnRetirerPhoto.classList.remove('hidden');
+  } else {
+    photoImgEl.style.display = 'none';
+    photoInitialesEl.style.display = 'block';
+    const i1 = (cv.personnel.prenom || '').trim().charAt(0);
+    const i2 = (cv.personnel.nom || '').trim().charAt(0);
+    photoInitialesEl.textContent = (i1 + i2).toUpperCase();
+    btnRetirerPhoto.classList.add('hidden');
+  }
+}
+
+document.getElementById('btnChoisirPhoto').addEventListener('click', () => document.getElementById('photoFichier').click());
+
+document.getElementById('photoFichier').addEventListener('change', (e) => {
+  const fichier = e.target.files[0];
+  const statut = document.getElementById('photoStatut');
+  e.target.value = '';
+  if (!fichier) return;
+  if (!fichier.type.startsWith('image/')) {
+    statut.textContent = "Merci de choisir un fichier image.";
+    return;
+  }
+
+  statut.textContent = 'Traitement de la photo...';
+  const image = new Image();
+  const lecteur = new FileReader();
+  lecteur.onload = () => { image.src = lecteur.result; };
+  image.onload = () => {
+    // Recadrage carré centré, puis redimensionnement à une taille raisonnable
+    // pour le PDF (400x400 suffit largement, même en haute résolution papier).
+    const cote = Math.min(image.width, image.height);
+    const decalageX = (image.width - cote) / 2;
+    const decalageY = (image.height - cote) / 2;
+    const taille = 400;
+    const canevas = document.createElement('canvas');
+    canevas.width = taille; canevas.height = taille;
+    const ctx = canevas.getContext('2d');
+    ctx.drawImage(image, decalageX, decalageY, cote, cote, 0, 0, taille, taille);
+    cv.personnel.photo = canevas.toDataURL('image/jpeg', 0.85);
+    majApercuPhoto();
+    sauvegarderLocalement(); mettreAJourApercu();
+    statut.textContent = '';
+  };
+  image.onerror = () => { statut.textContent = "Impossible de lire cette image."; };
+  lecteur.onerror = () => { statut.textContent = "Impossible de lire ce fichier."; };
+  lecteur.readAsDataURL(fichier);
+});
+
+btnRetirerPhoto.addEventListener('click', () => {
+  cv.personnel.photo = '';
+  majApercuPhoto();
+  sauvegarderLocalement(); mettreAJourApercu();
+});
+
+majApercuPhoto();
+
+// --- Sélecteur de modèle de CV ---
+function selectionnerModele(id) {
+  cv.modele = id;
+  document.querySelectorAll('.carte-modele').forEach(carte => {
+    const actif = carte.dataset.modele === id;
+    carte.classList.toggle('actif', actif);
+    carte.setAttribute('aria-pressed', actif ? 'true' : 'false');
+  });
+}
+document.querySelectorAll('.carte-modele').forEach(carte => {
+  carte.addEventListener('click', () => {
+    selectionnerModele(carte.dataset.modele);
+    sauvegarderLocalement(); mettreAJourApercu();
+  });
+  carte.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      selectionnerModele(carte.dataset.modele);
+      sauvegarderLocalement(); mettreAJourApercu();
+    }
+  });
+});
+selectionnerModele(cv.modele);
 
 // --- Scan CIN : modale dédiée, portage fidèle d'index.html + ocr.html + ocr.php ---
 const cinFileInput = document.getElementById('cinFileInput');
@@ -918,11 +1076,12 @@ function mettreAJourApercu() {}
 function construireDonneesCV() {
   const p = cv.personnel;
   return {
+    modele: cv.modele || 'classique',
     personnel: {
       nom: p.nom, prenom: p.prenom, titre_professionnel: p.titrePro, profil_court: p.profilCourt,
       telephone: p.telephone, email: p.email, ville: p.ville,
       adresse: p.adresse, date_naissance: p.dateNaissance,
-      permis_conduire: p.permis === 'oui',
+      permis_conduire: p.permis === 'oui', photo_url: p.photo,
     },
     experiences: cv.sansExperience ? [] : cv.experiences.map(e => ({
       poste: e.poste, employeur: e.employeur, lieu: e.lieu,
@@ -1070,13 +1229,17 @@ async function chargerCVExistant(id) {
     if (!res.ok || data.erreur) throw new Error(data.erreur || 'Erreur');
     const d = data.donnees;
 
+    cv.modele = d.modele || 'classique';
+    selectionnerModele(cv.modele);
+
     Object.assign(cv.personnel, {
       nom: d.personnel.nom, prenom: d.personnel.prenom, titrePro: d.personnel.titre_professionnel,
       profilCourt: d.personnel.profil_court, telephone: d.personnel.telephone, email: d.personnel.email,
       ville: d.personnel.ville, adresse: d.personnel.adresse, dateNaissance: d.personnel.date_naissance,
-      permis: d.personnel.permis_conduire ? 'oui' : '',
+      permis: d.personnel.permis_conduire ? 'oui' : '', photo: d.personnel.photo_url || '',
     });
     champsPersonnel.forEach(cle => { const el = document.getElementById(cle === 'titrePro' ? 'titrePro' : cle === 'profilCourt' ? 'profilCourt' : cle); if (el) el.value = cv.personnel[cle] || ''; });
+    majApercuPhoto();
 
     cv.experiences = (d.experiences || []).map(e => ({ poste:e.poste, employeur:e.employeur, lieu:e.lieu, debut:e.date_debut, fin:e.date_fin, actuel:!!e.poste_actuel, description:e.description }));
     cv.sansExperience = cv.experiences.length === 0 && (d.experiences || []).length === 0;
