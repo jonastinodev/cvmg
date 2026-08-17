@@ -52,7 +52,7 @@ if (!$ligne) {
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Inter', Arial, sans-serif; color: var(--texte); background: #F0F2F5; }
   a { color: inherit; text-decoration: none; }
-  .enveloppe { max-width: 1180px; margin: 0 auto; padding: 0 6vw; }
+  .enveloppe { max-width: 1180px; margin: 0 auto; padding: 0 clamp(20px, 5vw, 40px); }
 
   /* En-tête identique à mes-cv.php : on ne perd jamais la navigation. */
   .barre { background: #fff; border-bottom: 1px solid #E4E7EB; }

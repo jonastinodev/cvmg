@@ -36,7 +36,10 @@ $estConnecte = !empty($_SESSION['utilisateur_id']);
   body { font-family: 'Inter', Arial, sans-serif; color: var(--texte); line-height: 1.55; }
   img, svg { display: block; max-width: 100%; }
   a { color: inherit; }
-  .enveloppe { max-width: 1180px; margin: 0 auto; padding: 0 6vw; }
+  /* Padding plafonné (clamp) et non en 6vw pur : au-delà de max-width, la boîte
+     cesse de grandir mais un padding en vw continue, lui, de suivre l'écran et
+     rétrécit le contenu de l'intérieur (950px de contenu sur un écran 1920px). */
+  .enveloppe { max-width: 1180px; margin: 0 auto; padding: 0 clamp(20px, 5vw, 40px); }
 
   h1, h2, h3 { font-family: 'Poppins', sans-serif; color: var(--bleu-marine); line-height: 1.2; }
 
@@ -77,15 +80,29 @@ $estConnecte = !empty($_SESSION['utilisateur_id']);
   .hero { padding: 8mm 0 14mm; }
   .hero-grille { display: grid; gap: 10mm; align-items: center; }
   @media (min-width: 800px) { .hero-grille { grid-template-columns: 1.1fr 1fr; gap: 14mm; } }
-  .hero h1 { font-size: 28pt; font-weight: 800; letter-spacing: -.3pt; }
+  /* Titre fluide : vaut exactement 28pt dès ~530px de large (rendu desktop
+     inchangé), mais se réduit en dessous au lieu de rester figé et de forcer
+     des coupures de mots sur mobile. */
+  .hero h1 { font-size: clamp(24px, 7vw, 28pt); font-weight: 800; letter-spacing: -.3pt; }
   .hero h1 .accent { color: var(--orange); }
   .hero p.lead { font-size: 12pt; color: var(--gris-texte); margin: 5mm 0 7mm; max-width: 46ch; }
-  .hero-boutons { display: flex; align-items: center; gap: 3.5mm; }
+  /* .btn est en white-space:nowrap : les deux boutons du héro totalisent ~480px
+     incompressibles. Sans flex-wrap ils débordaient de l'écran sous 530px de
+     large ; sous 560px on les empile en pleine largeur (cible tactile plus
+     large et alignement propre, plutôt qu'un repli en escalier). */
+  .hero-boutons { display: flex; align-items: center; gap: 3.5mm; flex-wrap: wrap; }
+  @media (max-width: 560px) {
+    .hero-boutons { flex-direction: column; align-items: stretch; }
+    .hero-boutons .btn { width: 100%; }
+  }
   .hero-reassurance { margin-top: 4mm; font-size: 9pt; color: var(--gris-texte); }
 
   /* Illustration héro : plus de carte de fond, léger flottement continu */
   .hero-illu { display: flex; align-items: center; justify-content: center; }
   .hero-illu img { max-width: 100%; height: auto; animation: flotter 4.5s ease-in-out infinite; }
+  /* Sur mobile l'illustration passe sous le texte : la brider évite qu'un carré
+     de 500px repousse le reste de la page hors du premier écran. */
+  @media (max-width: 560px) { .hero-illu img { max-width: 300px; } }
   @keyframes flotter { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 
   /* ===== Comment ça marche ===== */
@@ -191,8 +208,7 @@ $estConnecte = !empty($_SESSION['utilisateur_id']);
         <a href="creer-cv.php" class="btn btn-orange">Créer mon CV gratuitement</a>
         <a href="#comment-ca-marche" class="btn btn-outline">Voir comment ça marche</a>
       </div>
-      <p class="hero-reassurance">Gratuit &bull; Sans inscription &bull; Votre CV en PDF en quelques minutes</p>
-    </div>
+     </div>
     <div class="hero-illu reveal">
       <!-- Dépose ton illustration téléchargée ici : illustrations/hero.svg -->
       <img src="illustrations/hero.svg" alt="Illustration : création de CV en ligne" width="500" height="500" decoding="async">

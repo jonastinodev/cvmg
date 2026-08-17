@@ -1,0 +1,29 @@
+<?php
+// config.php.example — Modèle à copier en "config.php" sur le serveur Plesk,
+// puis à remplir avec les vraies valeurs de production. Ce fichier-modèle,
+// lui, ne contient aucun secret et peut être versionné sans risque.
+//
+// Sur le serveur : créer config.php à côté de ce fichier (même dossier,
+// racine du site), avec les mêmes clés define() et les vraies valeurs.
+// config.php ne doit JAMAIS être commité ni transmis autrement que par
+// upload direct/chiffré (il est dans .gitignore).
+
+// --- Clé API Google Gemini ---
+// Récupérable sur https://aistudio.google.com/apikey
+define('GEMINI_API_KEY', 'À_REMPLIR');
+define('GEMINI_MODEL', 'gemini-flash-latest');
+
+// --- Connexion avec Google ---
+// Récupérable dans Google Cloud Console → API et services → Identifiants.
+// Important : ajouter le domaine de production (https://votredomaine.tld)
+// dans les "Authorized JavaScript origins" de CE client OAuth, sinon la
+// connexion Google échoue avec une erreur d'origine non autorisée.
+define('GOOGLE_CLIENT_ID', 'À_REMPLIR');
+
+// --- Connexion à la base MySQL créée dans Plesk ---
+// Ces identifiants sont ceux de la base créée via Plesk (Bases de données),
+// pas ceux de root/XAMPP utilisés en local.
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'À_REMPLIR');
+define('DB_USER', 'À_REMPLIR');
+define('DB_PASS', 'À_REMPLIR');

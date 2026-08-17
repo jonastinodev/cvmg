@@ -42,7 +42,7 @@ function dateRelative(string $dateSql): string {
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Inter', Arial, sans-serif; color: var(--texte); }
   a { color: inherit; text-decoration: none; }
-  .enveloppe { max-width: 1180px; margin: 0 auto; padding: 0 6vw; }
+  .enveloppe { max-width: 1180px; margin: 0 auto; padding: 0 clamp(20px, 5vw, 40px); }
   h1 { font-family: 'Poppins', sans-serif; color: var(--bleu-marine); font-size: 20pt; }
 
   nav { display: flex; align-items: center; justify-content: space-between; padding: 5mm 0; }

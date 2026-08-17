@@ -16,7 +16,7 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Inter', Arial, sans-serif; color: var(--texte); }
   a { color: inherit; }
-  .enveloppe { max-width: 1180px; margin: 0 auto; padding: 0 6vw; }
+  .enveloppe { max-width: 1180px; margin: 0 auto; padding: 0 clamp(20px, 5vw, 40px); }
   nav { display: flex; align-items: center; padding: 5mm 0; }
   .nav-logo { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 15pt; color: var(--bleu-marine); text-decoration: none; }
   .nav-logo span { color: var(--orange); }

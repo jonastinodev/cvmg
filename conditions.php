@@ -27,7 +27,7 @@ $estConnecte = !empty($_SESSION['utilisateur_id']);
   body { font-family: 'Inter', Arial, sans-serif; color: var(--texte); line-height: 1.6; }
   a { color: inherit; }
   .lien { color: var(--bleu); }
-  .enveloppe { max-width: 1180px; margin: 0 auto; padding: 0 6vw; }
+  .enveloppe { max-width: 1180px; margin: 0 auto; padding: 0 clamp(20px, 5vw, 40px); }
   main.enveloppe { max-width: 900px; }
   h1, h2 { font-family: 'Poppins', sans-serif; color: var(--bleu-marine); line-height: 1.2; }
 
