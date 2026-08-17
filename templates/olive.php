@@ -27,15 +27,23 @@ function genererCvOlive(array $cv): string {
 
       .page { width: 210mm; padding: 12mm 14mm; }
 
-      /* ===== En-tête ===== */
-      header { display: flex; align-items: flex-start; gap: 8mm; padding-bottom: 6mm;
+      /* ===== En-tête =====
+         Un <table> plutôt qu'un flex : sous dompdf, un en-tête à 3 colonnes en
+         display:flex s'est déjà retrouvé à empiler ses colonnes verticalement
+         au lieu de les mettre côte à côte (bug constaté en PDF réel). Comme
+         cette ligne ne dépasse jamais une page, un tableau classique est fiable
+         (pas de risque de pagination à gérer ici, contrairement au corps). */
+      table.table-entete { width: 100%; border-collapse: collapse; padding-bottom: 6mm;
         border-bottom: 0.5mm solid #E7EBE0; margin-bottom: 6mm; }
-      .identite { flex: 1; }
+      table.table-entete td { vertical-align: top; }
+      td.identite { padding-right: 4mm; }
+      td.cellule-photo { width: 30mm; }
+      td.cellule-coord { width: 46mm; padding-left: 4mm; }
       .identite h1 { font-weight: 700; font-size: 19pt; color: #22262B; line-height: 1.15; }
       .identite .titre-pro { font-weight: 500; font-size: 12pt; color: #5B6472; margin-top: 1.5mm; }
 
       .photo-tete { width: 30mm; height: 30mm; border-radius: 50%; border: 0.7mm solid #6F8158;
-        overflow: hidden; flex-shrink: 0; background: #E7EBE0;
+        overflow: hidden; background-color: #E7EBE0;
         text-align: center; line-height: 30mm; color: #6F8158; font-weight: 700; font-size: 14pt; }
       .photo-tete img { width: 100%; height: 100%; object-fit: cover; vertical-align: top; }
 
@@ -110,27 +118,31 @@ function genererCvOlive(array $cv): string {
     <body>
     <div class="page">
 
-      <header>
-        <div class="identite">
-          <h1><?= e(mb_strtoupper($nom)) ?> <?= e($prenom) ?></h1>
-          <?php if (!empty($p['titre_professionnel'])): ?>
-            <div class="titre-pro"><?= e(mb_strtoupper($p['titre_professionnel'])) ?></div>
-          <?php endif; ?>
-        </div>
-        <div class="photo-tete">
-          <?php if (!empty($p['photo_url'])): ?>
-            <img src="<?= e($p['photo_url']) ?>" alt="">
-          <?php else: ?>
-            <?= e(initiales($nom, $prenom)) ?>
-          <?php endif; ?>
-        </div>
-        <div class="coord-tete">
-          <?php if (!empty($p['telephone'])): ?><div><b>Tél :</b> <?= e($p['telephone']) ?></div><?php endif; ?>
-          <?php if (!empty($p['email'])): ?><div><b>Email :</b> <?= e($p['email']) ?></div><?php endif; ?>
-          <?php if (!empty($p['ville'])): ?><div><b>Ville :</b> <?= e($p['ville']) ?></div><?php endif; ?>
-          <?php if (!empty($p['adresse'])): ?><div><b>Adresse :</b> <?= e($p['adresse']) ?></div><?php endif; ?>
-        </div>
-      </header>
+      <table class="table-entete">
+        <tr>
+          <td class="identite">
+            <h1><?= e(mb_strtoupper($nom)) ?> <?= e($prenom) ?></h1>
+            <?php if (!empty($p['titre_professionnel'])): ?>
+              <div class="titre-pro"><?= e(mb_strtoupper($p['titre_professionnel'])) ?></div>
+            <?php endif; ?>
+          </td>
+          <td class="cellule-photo">
+            <div class="photo-tete">
+              <?php if (!empty($p['photo_url'])): ?>
+                <img src="<?= e($p['photo_url']) ?>" alt="">
+              <?php else: ?>
+                <?= e(initiales($nom, $prenom)) ?>
+              <?php endif; ?>
+            </div>
+          </td>
+          <td class="cellule-coord coord-tete">
+            <?php if (!empty($p['telephone'])): ?><div><b>Tél :</b> <?= e($p['telephone']) ?></div><?php endif; ?>
+            <?php if (!empty($p['email'])): ?><div><b>Email :</b> <?= e($p['email']) ?></div><?php endif; ?>
+            <?php if (!empty($p['ville'])): ?><div><b>Ville :</b> <?= e($p['ville']) ?></div><?php endif; ?>
+            <?php if (!empty($p['adresse'])): ?><div><b>Adresse :</b> <?= e($p['adresse']) ?></div><?php endif; ?>
+          </td>
+        </tr>
+      </table>
 
       <?php if (!empty($p['profil_court'])): ?>
         <div class="profil"><?= e($p['profil_court']) ?></div>
