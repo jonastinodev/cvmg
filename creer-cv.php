@@ -49,10 +49,18 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
   .lien-reinitialiser:hover { color: var(--app-rouge); }
 
   /* --- Mise en page (formulaire seul, plus d'aperçu en direct) --- */
-  .conteneur { max-width: 600px; margin: 0 auto; padding: 6mm; }
+  /* Mobile d'abord : la carte occupe toute la largeur de l'écran. Le double
+     padding (conteneur 6mm + carte 6mm = 45px de chaque côté) ne laissait que
+     285px de contenu utile sur un écran de 375px. La carte blanche détachée
+     sur fond gris n'a de sens qu'à partir de 600px, où il y a de la marge. */
+  .conteneur { max-width: 600px; margin: 0 auto; padding: 0; }
   .colonne-form { width: 100%; }
 
-  .carte { background: #fff; border-radius: 3mm; padding: 6mm; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .carte { background: #fff; padding: 5mm; }
+  @media (min-width: 600px) {
+    .conteneur { padding: 6mm; }
+    .carte { border-radius: 3mm; padding: 6mm; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  }
 
   h2.titre-etape { font-family: 'Poppins', sans-serif; font-size: 15pt; color: var(--app-bleu-fonce); margin: 0 0 2mm; }
   p.sous-titre { color: var(--gris-texte); font-size: 10pt; margin: 0 0 5mm; }
@@ -64,27 +72,53 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
   .legende-requis span { color: var(--app-rouge); font-weight: 700; }
   input.en-erreur, textarea.en-erreur, select.en-erreur { border-color: var(--app-rouge) !important; }
   .msg-erreur-champ { font-size: 8.5pt; color: var(--app-rouge); margin-top: 1mm; }
+  /* 16px minimum sur mobile : en dessous de ce seuil, iOS Safari zoome
+     automatiquement sur le champ au focus et l'utilisateur doit dézoomer
+     entre chaque question. On repasse à l'échelle en pt sur grand écran. */
   input[type=text], input[type=tel], input[type=email], input[type=date], select, textarea {
-    width: 100%; padding: 3mm; border: 1.5px solid #DCE1E7; border-radius: 2mm; font-size: 10.5pt; font-family: inherit;
+    width: 100%; padding: 3mm; border: 1.5px solid #DCE1E7; border-radius: 2mm; font-size: 16px; font-family: inherit;
+  }
+  @media (min-width: 600px) {
+    input[type=text], input[type=tel], input[type=email], input[type=date], select, textarea { font-size: 10.5pt; }
   }
   input:focus, select:focus, textarea:focus { outline: 2px solid var(--app-bleu); border-color: var(--app-bleu); }
   textarea { resize: vertical; min-height: 20mm; }
   .aide { font-size: 8.5pt; color: var(--gris-texte); margin-top: 1mm; }
 
-  .ligne-2 { display: flex; gap: 4mm; }
+  /* Deux champs côte à côte tombent sous 150px de large sur mobile : on empile. */
+  .ligne-2 { display: flex; flex-direction: column; }
   .ligne-2 > div { flex: 1; }
+  @media (min-width: 600px) { .ligne-2 { flex-direction: row; gap: 4mm; } }
 
+  /* min-height 44px : taille de cible tactile recommandée. Sans elle,
+     « Choisir une photo » faisait 32px et « Précédent / Suivant » 43px. */
   .btn { font-family: inherit; font-size: 10.5pt; font-weight: 600; padding: 3.2mm 6mm; border-radius: 2mm;
-    border: none; cursor: pointer; }
+    border: none; cursor: pointer; min-height: 44px;
+    display: inline-flex; align-items: center; justify-content: center; }
   .btn-principal { background: var(--app-orange); color: #0B1F3D; }
   .btn-principal:hover { background: var(--app-orange-fonce); }
   .btn-secondaire { background: #fff; color: var(--app-bleu); border: 1.5px solid var(--app-bleu); }
   .btn-valider { background: var(--app-orange); color: #0B1F3D; }
   .btn-lien { background: none; color: var(--app-bleu); text-decoration: underline; padding: 2mm 0; }
-  .btn-supprimer { background: none; color: var(--app-rouge); font-size: 9pt; text-decoration: underline; padding: 1mm 0; }
+  /* S'utilise sans la classe .btn (aspect lien) : sa zone tactile doit donc
+     être posée ici. Le padding est invisible (fond transparent) mais rend le
+     bouton atteignable au doigt — il faisait 26px de haut. */
+  .btn-supprimer { background: none; border: none; font-family: inherit; cursor: pointer;
+    color: var(--app-rouge); font-size: 9pt; text-decoration: underline;
+    padding: 2.5mm 2mm; margin-right: -2mm; min-height: 40px; }
   .btn:disabled { opacity: .5; cursor: not-allowed; }
 
-  .nav-etapes { display: flex; justify-content: space-between; margin-top: 6mm; }
+  /* Barre d'action collante sur mobile : l'étape 1 fait à elle seule 1,7 écran
+     de haut, il fallait scroller jusqu'en bas pour trouver « Suivant » à chaque
+     étape. Elle redevient un simple bloc en pied de carte sur grand écran. */
+  .nav-etapes { display: flex; justify-content: space-between; gap: 3mm; margin-top: 6mm;
+    position: sticky; bottom: 0; background: #fff; padding: 3mm 0;
+    border-top: 1px solid #EEF0F3; z-index: 5; }
+  .nav-etapes .btn { flex: 1; }
+  @media (min-width: 600px) {
+    .nav-etapes { position: static; background: none; border-top: none; padding: 0; }
+    .nav-etapes .btn { flex: 0 0 auto; }
+  }
 
   .bloc-repetable { border: 1px solid #E4E7EB; border-radius: 2mm; padding: 4mm; margin-top: 4mm; position: relative; }
   .bloc-repetable-entete { display: flex; justify-content: space-between; align-items: center; }
@@ -121,13 +155,19 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
   .modele-ocre .bande { background: #BFA046; }
 
   .tags-zone { display: flex; flex-wrap: wrap; gap: 2mm; padding: 2mm; border: 1.5px solid #DCE1E7; border-radius: 2mm; }
-  .tag-pilule { background: var(--app-bleu-clair); padding: 1.5mm 2.5mm; border-radius: 1mm; font-size: 9.5pt; display: flex; align-items: center; gap: 1.5mm; }
-  .tag-pilule button { background: none; border: none; color: var(--gris-texte); cursor: pointer; font-size: 10pt; line-height: 1; }
+  .tag-pilule { background: var(--app-bleu-clair); padding: 1.5mm 1mm 1.5mm 2.5mm; border-radius: 1mm; font-size: 9.5pt; display: flex; align-items: center; gap: .5mm; }
+  /* La croix de retrait est très sollicitée au doigt : 15px de haut, c'était
+     intenable. On l'élargit sans grossir la pilule (padding, pas font-size). */
+  .tag-pilule button { background: none; border: none; color: var(--gris-texte); cursor: pointer;
+    font-size: 10pt; line-height: 1; padding: 2mm 2.5mm; margin: -2mm 0; }
   .tags-zone input { border: none; flex: 1; min-width: 40mm; padding: 1.5mm; }
   .tags-zone input:focus { outline: none; }
 
-  .suggestions { display: flex; flex-wrap: wrap; gap: 1.5mm; margin-top: 2mm; }
-  .suggestion { font-size: 8.5pt; background: #fff; border: 1px dashed #C7CDD5; color: var(--gris-texte); padding: 1mm 2.5mm; border-radius: 3mm; cursor: pointer; }
+  .suggestions { display: flex; flex-wrap: wrap; gap: 2mm; margin-top: 2.5mm; }
+  /* Sur mobile, taper une puce est le moyen principal d'ajouter une compétence
+     (plus rapide que la saisie au clavier) : ces puces doivent être confortables. */
+  .suggestion { font-size: 9.5pt; background: #fff; border: 1px dashed #C7CDD5; color: var(--gris-texte);
+    padding: 2.5mm 3.5mm; border-radius: 5mm; cursor: pointer; min-height: 36px; }
   .suggestion:hover { border-color: var(--app-bleu); color: var(--app-bleu); }
 
   .hidden { display: none !important; }
@@ -297,28 +337,28 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
         </div>
 
         <div class="ligne-2">
-          <div><label for="nom">Nom <span class="requis">*</span></label><input type="text" id="nom" required placeholder="Ex : RAKOTO"></div>
-          <div><label for="prenom">Prénom <span class="facultatif">(facultatif)</span></label><input type="text" id="prenom" placeholder="Ex : Jean"></div>
+          <div><label for="nom">Nom <span class="requis">*</span></label><input type="text" id="nom" required autocomplete="family-name" placeholder="Ex : RAKOTO"></div>
+          <div><label for="prenom">Prénom <span class="facultatif">(facultatif)</span></label><input type="text" id="prenom" autocomplete="given-name" placeholder="Ex : Jean"></div>
         </div>
 
         <label for="titrePro">Métier ou poste recherché <span class="requis">*</span></label>
-        <input type="text" id="titrePro" required placeholder="Ex : Vendeur, Agent de sécurité, Couturière">
+        <input type="text" id="titrePro" required autocomplete="organization-title" placeholder="Ex : Vendeur, Agent de sécurité, Couturière">
 
         <label for="profilCourt">Courte description <span class="facultatif">(facultatif)</span></label>
         <textarea id="profilCourt" placeholder="Ex : Personne sérieuse, motivée et ponctuelle, à la recherche d'un emploi dans la vente."></textarea>
 
         <div class="ligne-2">
-          <div><label for="telephone">Téléphone <span class="requis">*</span></label><input type="tel" id="telephone" required placeholder="034 12 345 67"></div>
-          <div><label for="email">E-mail <span class="facultatif">(facultatif)</span></label><input type="email" id="email"></div>
+          <div><label for="telephone">Téléphone <span class="requis">*</span></label><input type="tel" id="telephone" required autocomplete="tel" inputmode="tel" placeholder="034 12 345 67"></div>
+          <div><label for="email">E-mail <span class="facultatif">(facultatif)</span></label><input type="email" id="email" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false"></div>
         </div>
 
         <div class="ligne-2">
-          <div><label for="ville">Ville / Région <span class="requis">*</span></label><input type="text" id="ville" required placeholder="Ex : Antananarivo"></div>
-          <div><label for="adresse">Adresse <span class="facultatif">(facultatif)</span></label><input type="text" id="adresse"></div>
+          <div><label for="ville">Ville / Région <span class="requis">*</span></label><input type="text" id="ville" required autocomplete="address-level2" placeholder="Ex : Antananarivo"></div>
+          <div><label for="adresse">Adresse <span class="facultatif">(facultatif)</span></label><input type="text" id="adresse" autocomplete="street-address"></div>
         </div>
 
         <div class="ligne-2">
-          <div><label for="dateNaissance">Date de naissance <span class="facultatif">(facultatif)</span></label><input type="date" id="dateNaissance"></div>
+          <div><label for="dateNaissance">Date de naissance <span class="facultatif">(facultatif)</span></label><input type="date" id="dateNaissance" autocomplete="bday"></div>
           <div><label for="permis">Permis de conduire <span class="facultatif">(facultatif)</span></label>
             <select id="permis"><option value="">Ne pas préciser</option><option value="oui">Oui</option><option value="non">Non</option></select>
           </div>
