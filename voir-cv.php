@@ -1,11 +1,12 @@
 <?php
 // voir-cv.php — Affiche un CV enregistré en lecture, dans la mise en page du
 // site (en-tête conservé, actions accessibles), et non en plein écran brut.
-// Le CV lui-même est affiché via apercu-pdf.php : le VRAI PDF (dompdf) rendu
-// nativement par le navigateur dans une iframe — pas une re-simulation HTML,
-// qui ne peut pas être garantie identique au fichier téléchargé (un
-// navigateur affiche le CV en défilement continu, dompdf le pagine
-// réellement pour de vrai en A4).
+// Le CV lui-même est rendu par le MÊME gabarit que le PDF (cv-template.php),
+// isolé dans une iframe pour que ses styles n'entrent pas en conflit avec ceux
+// de l'application — même principe que l'aperçu de creer-cv.php.
+// (Le téléchargement, lui, passe par apercu-pdf.php pour produire le vrai
+// fichier PDF ; les bugs de rendu dompdf identifiés ont été corrigés à la
+// source dans les gabarits, donc les deux restent cohérents.)
 
 require_once __DIR__ . '/session.php';
 if (empty($_SESSION['utilisateur_id'])) {
@@ -13,6 +14,7 @@ if (empty($_SESSION['utilisateur_id'])) {
     exit;
 }
 require_once __DIR__ . '/bdd.php';
+require_once __DIR__ . '/cv-template.php';
 
 $cvId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 if (!$cvId) {
@@ -21,10 +23,16 @@ if (!$cvId) {
 }
 
 $pdo = bdd();
-$stmt = $pdo->prepare('SELECT titre FROM cv WHERE id = :id AND utilisateur_id = :uid');
+$stmt = $pdo->prepare('SELECT titre, donnees_json FROM cv WHERE id = :id AND utilisateur_id = :uid');
 $stmt->execute([':id' => $cvId, ':uid' => $_SESSION['utilisateur_id']]);
 $ligne = $stmt->fetch();
-$introuvable = !$ligne;
+
+if (!$ligne) {
+    $introuvable = true;
+} else {
+    $introuvable = false;
+    $donnees = json_decode($ligne['donnees_json'], true) ?: [];
+}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -76,10 +84,13 @@ $introuvable = !$ligne;
   .btn-contour:hover { background: var(--gris-fond); }
   .btn:disabled { opacity: .6; cursor: not-allowed; }
 
-  /* Cadre d'aperçu : le navigateur affiche le PDF avec son propre lecteur
-     natif (zoom, défilement, pages) — pas de mise à l'échelle manuelle. */
-  .cadre-apercu iframe { width: 100%; height: 80vh; min-height: 500px; border: 0;
-    display: block; background: #fff; box-shadow: 0 2px 14px rgba(11,31,61,.12); border-radius: 1mm; }
+  /* Cadre d'aperçu : le CV est rendu à sa taille native (794px = A4 à 96dpi)
+     puis réduit par transform pour tenir dans la largeur disponible. */
+  .cadre-apercu { display: flex; justify-content: center; }
+  .apercu-boite { position: relative; overflow: hidden; background: #fff;
+    box-shadow: 0 2px 14px rgba(11,31,61,.12); border-radius: 1mm; }
+  .apercu-boite iframe { width: 794px; height: 1123px; border: 0; display: block;
+    transform-origin: top left; }
 
   .message-vide { background: #fff; border: 1px solid #E4E7EB; border-radius: 3mm;
     padding: 14mm 6mm; text-align: center; color: var(--gris-texte); }
@@ -120,8 +131,31 @@ $introuvable = !$ligne;
   </div>
 
   <div class="cadre-apercu">
-    <iframe src="apercu-pdf.php?id=<?= $cvId ?>" title="CV en PDF"></iframe>
+    <div class="apercu-boite" id="apercuBoite">
+      <iframe id="apercuIframe" title="Aperçu du CV"
+              srcdoc="<?= htmlspecialchars(genererCvHtml($donnees), ENT_QUOTES, 'UTF-8') ?>"></iframe>
+    </div>
   </div>
+
+  <script>
+  const boite = document.getElementById('apercuBoite');
+  const cadre = document.getElementById('apercuIframe');
+
+  // Le contenu du CV a une largeur fixe (210mm) : il ne peut pas se réadapter
+  // en largeur, on le met donc à l'échelle pour qu'il tienne dans l'écran.
+  function ajusterEchelle() {
+    const dispo = boite.parentElement.clientWidth;
+    const echelle = Math.min(1, dispo / 794);
+    cadre.style.transform = `scale(${echelle})`;
+    const doc = cadre.contentDocument;
+    const hauteurReelle = doc ? Math.max(doc.body.scrollHeight, 1123) : 1123;
+    boite.style.width = (794 * echelle) + 'px';
+    boite.style.height = (hauteurReelle * echelle) + 'px';
+  }
+  cadre.addEventListener('load', ajusterEchelle);
+  ajusterEchelle();
+  window.addEventListener('resize', ajusterEchelle);
+  </script>
 <?php endif; ?>
 </main>
 
