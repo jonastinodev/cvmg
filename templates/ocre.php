@@ -30,20 +30,32 @@ function genererCvOcre(array $cv): string {
          Un flottant (float) plutôt qu'un <table> : sous dompdf, un tableau à
          deux colonnes qui doit se poursuivre sur une deuxième page laisse des
          pages blanches et reporte tout son contenu plus loin (bug vérifié).
-         Un flottant paginate normalement ; seule contrepartie, le texte de la
-         colonne principale peut être légèrement resserré tant qu'il est à la
-         hauteur de la colonne latérale — un compromis largement préférable à
-         perdre du contenu.
+         La colonne principale est ELLE AUSSI un flottant (avec une largeur
+         explicite), et non un bloc normal à côté du flottant : un bloc normal
+         se réadapte à la largeur totale de la page dès qu'il dépasse la
+         hauteur du flottant voisin (comportement CSS standard, pas un bug
+         dompdf), ce qui décale son texte et fait déborder les bordures. Deux
+         flottants côte à côte gardent chacun une largeur fixe sur toute leur
+         hauteur, quelle que soit la hauteur de l'autre (vérifié en PDF).
          Photo et bandeau intégrés à chaque colonne (plutôt qu'un <header>
          flex en pleine largeur au-dessus) : un flex étiré au-dessus d'un
          flottant provoquait une photo déformée sous dompdf (bug vérifié). */
-      .colonne-laterale { float: left; width: 68mm; background-color: #EAF2F8; padding: 9mm 8mm; }
-      .colonne-principale { margin-left: 68mm; }
+      /* Le padding de la colonne latérale est sur un wrapper interne (-int),
+         jamais directement sur le flottant : dompdf n'applique pas
+         correctement box-sizing:border-box sur un élément flottant qui a du
+         padding — le texte s'enroule à la largeur totale (padding compris)
+         puis déborde de la boîte (bug vérifié, cause du texte tronqué
+         constaté par l'utilisateur). La colonne principale n'a pas ce
+         problème : elle n'a pas de padding propre, seul son enfant
+         .contenu-principal (non flottant) en a un. */
+      .colonne-laterale { float: left; width: 68mm; min-height: 250mm; background-color: #EAF2F8; }
+      .colonne-laterale-int { padding: 9mm 8mm; }
+      .colonne-principale { float: left; width: 142mm; }
 
       .photo-boite { width: 40mm; height: 40mm; border-radius: 3mm; overflow: hidden; background: #fff;
-        border: 0.5mm solid #D7E3ED; margin: 0 auto 6mm; display: flex; align-items: center;
-        justify-content: center; color: #14213D; font-weight: 700; font-size: 16pt; }
-      .photo-boite img { width: 100%; height: 100%; object-fit: cover; }
+        border: 0.5mm solid #D7E3ED; margin: 0 auto 6mm;
+        text-align: center; line-height: 40mm; color: #14213D; font-weight: 700; font-size: 16pt; }
+      .photo-boite img { width: 100%; height: 100%; object-fit: cover; vertical-align: top; }
 
       .bandeau-ocre { background-color: #BFA046; color: #14213D; padding: 10mm 12mm; }
       .bandeau-ocre h1 { font-weight: 700; font-size: 18pt; line-height: 1.2; }
@@ -93,6 +105,7 @@ function genererCvOcre(array $cv): string {
     <div class="page">
 
       <div class="colonne-laterale">
+       <div class="colonne-laterale-int">
         <div class="photo-boite">
           <?php if (!empty($p['photo_url'])): ?>
             <img src="<?= e($p['photo_url']) ?>" alt="">
@@ -153,6 +166,7 @@ function genererCvOcre(array $cv): string {
           </div>
         <?php endif; ?>
 
+       </div>
       </div>
 
       <div class="colonne-principale">

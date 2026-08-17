@@ -30,16 +30,26 @@ function genererCvBleuMarine(array $cv): string {
          Un flottant (float) plutôt qu'un <table> : sous dompdf, un tableau à
          deux colonnes qui doit se poursuivre sur une deuxième page laisse des
          pages blanches et reporte tout son contenu plus loin (bug vérifié).
-         Un flottant paginate normalement ; seule contrepartie, le texte de la
-         colonne principale peut être légèrement resserré tant qu'il est à la
-         hauteur de la colonne latérale — un compromis largement préférable à
-         perdre du contenu. */
-      .colonne-laterale { float: left; width: 68mm; background-color: #17325C; color: #fff; padding: 12mm 8mm; }
+         La colonne principale est ELLE AUSSI un flottant (avec une largeur
+         explicite), et non un bloc normal à côté du flottant : un bloc normal
+         se réadapte à la largeur totale de la page dès qu'il dépasse la
+         hauteur du flottant voisin (comportement CSS standard, pas un bug
+         dompdf), ce qui décale son texte et fait déborder les bordures. Deux
+         flottants côte à côte gardent chacun une largeur fixe sur toute leur
+         hauteur, quelle que soit la hauteur de l'autre (vérifié en PDF). */
+      /* Le padding est sur .colonne-laterale-int (wrapper interne), jamais
+         directement sur le flottant : dompdf n'applique pas correctement
+         box-sizing:border-box sur un élément flottant qui a du padding — le
+         texte s'enroule à la largeur totale (padding compris) au lieu de la
+         largeur de contenu réduite, et déborde ensuite en dehors de la boîte
+         (bug vérifié, cause du texte tronqué constaté par l'utilisateur). */
+      .colonne-laterale { float: left; width: 68mm; min-height: 260mm; background-color: #17325C; color: #fff; }
+      .colonne-laterale-int { padding: 12mm 8mm; }
 
       .photo-cercle { width: 38mm; height: 38mm; border-radius: 50%; overflow: hidden; margin: 0 auto 9mm;
         background: rgba(255,255,255,.14); border: 0.7mm solid rgba(255,255,255,.35);
-        display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 15pt; }
-      .photo-cercle img { width: 100%; height: 100%; object-fit: cover; }
+        text-align: center; line-height: 38mm; color: #fff; font-weight: 700; font-size: 15pt; }
+      .photo-cercle img { width: 100%; height: 100%; object-fit: cover; vertical-align: top; }
 
       .cote-bloc { margin-bottom: 7mm; }
       .cote-titre { font-weight: 700; font-size: 9.5pt; letter-spacing: 0.6pt; text-transform: uppercase;
@@ -51,6 +61,7 @@ function genererCvBleuMarine(array $cv): string {
 
       .langue-item { margin-bottom: 3mm; font-size: 9pt; }
       .langue-nom { margin-bottom: 1mm; }
+      .langue-niveau { color: rgba(255,255,255,.6); font-size: 8pt; }
       .barre-fond { background: rgba(255,255,255,.22); height: 1.6mm; border-radius: 1mm; overflow: hidden; }
       .barre-remplie { background: #fff; height: 100%; }
 
@@ -62,7 +73,8 @@ function genererCvBleuMarine(array $cv): string {
       .liste-cote li::before { content: "• "; color: #fff; }
 
       /* ===== Colonne principale ===== */
-      .colonne-principale { overflow: hidden; padding: 14mm 14mm 14mm 12mm; }
+      .colonne-principale { float: left; width: 142mm; }
+      .colonne-principale-int { padding: 14mm 14mm 14mm 12mm; }
 
       .identite h1 { font-weight: 700; font-size: 19pt; color: #17325C; line-height: 1.15; }
       .identite .titre-pro { font-weight: 500; font-size: 11.5pt; color: #C8313E; margin-top: 1.5mm; }
@@ -92,6 +104,7 @@ function genererCvBleuMarine(array $cv): string {
     <div class="page">
 
       <div class="colonne-laterale">
+       <div class="colonne-laterale-int">
         <div class="photo-cercle">
           <?php if (!empty($p['photo_url'])): ?>
             <img src="<?= e($p['photo_url']) ?>" alt="">
@@ -115,7 +128,7 @@ function genererCvBleuMarine(array $cv): string {
             <div class="cote-titre">Langues</div>
             <?php foreach ($langues as $l): ?>
               <div class="langue-item">
-                <div class="langue-nom"><?= e($l['libelle'] ?? '') ?></div>
+                <div class="langue-nom"><?= e($l['libelle'] ?? '') ?><?php if (!empty($l['niveau'])): ?><span class="langue-niveau"> — <?= e($l['niveau']) ?></span><?php endif; ?></div>
                 <div class="barre-fond"><div class="barre-remplie" style="width:<?= niveauVersPourcentage($l['niveau'] ?? '') ?>%"></div></div>
               </div>
             <?php endforeach; ?>
@@ -143,10 +156,11 @@ function genererCvBleuMarine(array $cv): string {
             </ul>
           </div>
         <?php endif; ?>
-
+       </div>
       </div>
 
       <div class="colonne-principale">
+       <div class="colonne-principale-int">
         <div class="identite">
           <h1><?= e(mb_strtoupper($nom)) ?> <?= e($prenom) ?></h1>
           <?php if (!empty($p['titre_professionnel'])): ?>
@@ -200,6 +214,7 @@ function genererCvBleuMarine(array $cv): string {
             </ul>
           </section>
         <?php endif; ?>
+       </div>
       </div>
 
       <div style="clear:both"></div>

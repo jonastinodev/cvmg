@@ -35,9 +35,9 @@ function genererCvOlive(array $cv): string {
       .identite .titre-pro { font-weight: 500; font-size: 12pt; color: #5B6472; margin-top: 1.5mm; }
 
       .photo-tete { width: 30mm; height: 30mm; border-radius: 50%; border: 0.7mm solid #6F8158;
-        overflow: hidden; flex-shrink: 0; background: #E7EBE0; display: flex;
-        align-items: center; justify-content: center; color: #6F8158; font-weight: 700; font-size: 14pt; }
-      .photo-tete img { width: 100%; height: 100%; object-fit: cover; }
+        overflow: hidden; flex-shrink: 0; background: #E7EBE0;
+        text-align: center; line-height: 30mm; color: #6F8158; font-weight: 700; font-size: 14pt; }
+      .photo-tete img { width: 100%; height: 100%; object-fit: cover; vertical-align: top; }
 
       .coord-tete { font-size: 9pt; color: #5B6472; line-height: 1.7; }
       .coord-tete b { color: #22262B; }
@@ -48,12 +48,28 @@ function genererCvOlive(array $cv): string {
          Un flottant (float) plutôt qu'un <table> : sous dompdf, un tableau à
          deux colonnes qui doit se poursuivre sur une deuxième page laisse des
          pages blanches et reporte tout son contenu plus loin (bug vérifié).
-         Un flottant paginate normalement ; seule contrepartie, le texte de la
-         colonne principale peut être légèrement resserré tant qu'il est à la
-         hauteur de la colonne latérale — un compromis largement préférable à
-         perdre du contenu. */
-      .colonne-laterale { float: left; width: 62mm; background-color: #FAFBF8; border: 0.4mm solid #E7EBE0; padding: 6mm; }
-      .colonne-principale { overflow: hidden; padding-left: 9mm; }
+         La colonne principale est ELLE AUSSI un flottant (avec une largeur
+         explicite), et non un bloc normal à côté du flottant : un bloc normal
+         se réadapte à la largeur totale de la page dès qu'il dépasse la
+         hauteur du flottant voisin (comportement CSS standard, pas un bug
+         dompdf), ce qui décale son texte et fait déborder les bordures. Deux
+         flottants côte à côte gardent chacun une largeur fixe sur toute leur
+         hauteur, quelle que soit la hauteur de l'autre (vérifié en PDF). */
+      /* Pas de min-height ici : ce gabarit a un en-tête large (nom+photo+
+         contact+profil) au-dessus des colonnes ; augmenter la hauteur de la
+         sidebar réduit d'autant l'espace restant sur la page 1 pour les deux
+         colonnes, et dompdf les reporte alors en bloc sur la page 2 en
+         laissant un grand vide (bug déjà rencontré avec les tableaux, même
+         cause avec des flottants trop hauts).
+         Le padding est sur un wrapper interne (-int), jamais directement sur
+         le flottant : dompdf n'applique pas correctement box-sizing:border-box
+         sur un élément flottant qui a du padding — le texte s'enroule à la
+         largeur totale (padding compris) puis déborde de la boîte (bug
+         vérifié, cause du texte tronqué constaté par l'utilisateur). */
+      .colonne-laterale { float: left; width: 62mm; background-color: #FAFBF8; border: 0.4mm solid #E7EBE0; }
+      .colonne-laterale-int { padding: 6mm; }
+      .colonne-principale { float: left; width: 111mm; }
+      .colonne-principale-int { padding-left: 9mm; }
 
       .cote-bloc { margin-bottom: 7mm; }
       .cote-bloc:last-child { margin-bottom: 0; }
@@ -63,6 +79,7 @@ function genererCvOlive(array $cv): string {
       .barre-item { margin-bottom: 3mm; font-size: 9pt; }
       .barre-item:last-child { margin-bottom: 0; }
       .barre-nom { margin-bottom: 1mm; color: #22262B; }
+      .barre-niveau { color: #5B6472; font-size: 8pt; }
       .barre-fond { background: #E7EBE0; height: 1.6mm; border-radius: 1mm; overflow: hidden; }
       .barre-remplie { background: #6F8158; height: 100%; }
 
@@ -120,6 +137,7 @@ function genererCvOlive(array $cv): string {
       <?php endif; ?>
 
       <div class="colonne-laterale">
+       <div class="colonne-laterale-int">
         <?php if (!empty($competencesTechniques)): ?>
           <div class="cote-bloc">
             <div class="cote-titre">Compétences</div>
@@ -137,7 +155,7 @@ function genererCvOlive(array $cv): string {
             <div class="cote-titre">Langues</div>
             <?php foreach ($langues as $l): ?>
               <div class="barre-item">
-                <div class="barre-nom"><?= e($l['libelle'] ?? '') ?></div>
+                <div class="barre-nom"><?= e($l['libelle'] ?? '') ?><?php if (!empty($l['niveau'])): ?><span class="barre-niveau"> — <?= e($l['niveau']) ?></span><?php endif; ?></div>
                 <div class="barre-fond"><div class="barre-remplie" style="width:<?= niveauVersPourcentage($l['niveau'] ?? '') ?>%"></div></div>
               </div>
             <?php endforeach; ?>
@@ -161,9 +179,11 @@ function genererCvOlive(array $cv): string {
             </ul>
           </div>
         <?php endif; ?>
+       </div>
       </div>
 
       <div class="colonne-principale">
+       <div class="colonne-principale-int">
         <?php if (!empty($formations)): ?>
           <section class="bloc">
             <div class="titre-section">Diplômes</div>
@@ -214,6 +234,7 @@ function genererCvOlive(array $cv): string {
             </ul>
           </section>
         <?php endif; ?>
+       </div>
       </div>
 
       <div style="clear:both"></div>
