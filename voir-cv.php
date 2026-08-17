@@ -1,9 +1,11 @@
 <?php
 // voir-cv.php — Affiche un CV enregistré en lecture, dans la mise en page du
 // site (en-tête conservé, actions accessibles), et non en plein écran brut.
-// Le CV lui-même est rendu par le MÊME gabarit que le PDF (cv-template.php),
-// isolé dans une iframe pour que ses styles n'entrent pas en conflit avec ceux
-// de l'application — même principe que l'aperçu de creer-cv.php.
+// Le CV lui-même est affiché via apercu-pdf.php : le VRAI PDF (dompdf) rendu
+// nativement par le navigateur dans une iframe — pas une re-simulation HTML,
+// qui ne peut pas être garantie identique au fichier téléchargé (un
+// navigateur affiche le CV en défilement continu, dompdf le pagine
+// réellement pour de vrai en A4).
 
 require_once __DIR__ . '/session.php';
 if (empty($_SESSION['utilisateur_id'])) {
@@ -11,7 +13,6 @@ if (empty($_SESSION['utilisateur_id'])) {
     exit;
 }
 require_once __DIR__ . '/bdd.php';
-require_once __DIR__ . '/cv-template.php';
 
 $cvId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 if (!$cvId) {
@@ -20,17 +21,10 @@ if (!$cvId) {
 }
 
 $pdo = bdd();
-$stmt = $pdo->prepare('SELECT titre, donnees_json FROM cv WHERE id = :id AND utilisateur_id = :uid');
+$stmt = $pdo->prepare('SELECT titre FROM cv WHERE id = :id AND utilisateur_id = :uid');
 $stmt->execute([':id' => $cvId, ':uid' => $_SESSION['utilisateur_id']]);
 $ligne = $stmt->fetch();
-
-if (!$ligne) {
-    http_response_code(404);
-    $introuvable = true;
-} else {
-    $introuvable = false;
-    $donnees = json_decode($ligne['donnees_json'], true) ?: [];
-}
+$introuvable = !$ligne;
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -82,13 +76,10 @@ if (!$ligne) {
   .btn-contour:hover { background: var(--gris-fond); }
   .btn:disabled { opacity: .6; cursor: not-allowed; }
 
-  /* Cadre d'aperçu : le CV est rendu à sa taille native (794px = A4 à 96dpi)
-     puis réduit par transform pour tenir dans la largeur disponible. */
-  .cadre-apercu { display: flex; justify-content: center; }
-  .apercu-boite { position: relative; overflow: hidden; background: #fff;
-    box-shadow: 0 2px 14px rgba(11,31,61,.12); border-radius: 1mm; }
-  .apercu-boite iframe { width: 794px; height: 1123px; border: 0; display: block;
-    transform-origin: top left; }
+  /* Cadre d'aperçu : le navigateur affiche le PDF avec son propre lecteur
+     natif (zoom, défilement, pages) — pas de mise à l'échelle manuelle. */
+  .cadre-apercu iframe { width: 100%; height: 80vh; min-height: 500px; border: 0;
+    display: block; background: #fff; box-shadow: 0 2px 14px rgba(11,31,61,.12); border-radius: 1mm; }
 
   .message-vide { background: #fff; border: 1px solid #E4E7EB; border-radius: 3mm;
     padding: 14mm 6mm; text-align: center; color: var(--gris-texte); }
@@ -124,65 +115,13 @@ if (!$ligne) {
     </div>
     <div class="actions">
       <a href="creer-cv.php?cv_id=<?= $cvId ?>" class="btn btn-contour">Modifier</a>
-      <button type="button" class="btn btn-orange" id="btnTelecharger">Télécharger le PDF</button>
+      <a href="apercu-pdf.php?id=<?= $cvId ?>&telecharger=1" class="btn btn-orange">Télécharger le PDF</a>
     </div>
   </div>
 
   <div class="cadre-apercu">
-    <div class="apercu-boite" id="apercuBoite">
-      <iframe id="apercuIframe" title="Aperçu du CV"
-              srcdoc="<?= htmlspecialchars(genererCvHtml($donnees), ENT_QUOTES, 'UTF-8') ?>"></iframe>
-    </div>
+    <iframe src="apercu-pdf.php?id=<?= $cvId ?>" title="CV en PDF"></iframe>
   </div>
-
-  <script>
-  // Données du CV, réutilisées telles quelles pour la génération du PDF :
-  // même structure que celle attendue par generer-pdf.php.
-  const donneesCV = <?= json_encode($donnees, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?>;
-
-  const boite = document.getElementById('apercuBoite');
-  const cadre = document.getElementById('apercuIframe');
-
-  // Le contenu du CV a une largeur fixe (210mm) : il ne peut pas se réadapter
-  // en largeur, on le met donc à l'échelle pour qu'il tienne dans l'écran.
-  function ajusterEchelle() {
-    const dispo = boite.parentElement.clientWidth;
-    const echelle = Math.min(1, dispo / 794);
-    cadre.style.transform = `scale(${echelle})`;
-    boite.style.width = (794 * echelle) + 'px';
-    boite.style.height = (1123 * echelle) + 'px';
-  }
-  ajusterEchelle();
-  window.addEventListener('resize', ajusterEchelle);
-
-  document.getElementById('btnTelecharger').addEventListener('click', async (e) => {
-    const btn = e.currentTarget;
-    const texteOriginal = btn.textContent;
-    btn.textContent = 'Génération du PDF...'; btn.disabled = true;
-    try {
-      const res = await fetch('generer-pdf.php', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(donneesCV),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => null);
-        throw new Error((err && err.erreur) || 'Erreur serveur');
-      }
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      const p = donneesCV.personnel || {};
-      a.href = url;
-      a.download = 'CV_' + [p.nom, p.prenom].filter(Boolean).join('_') + '.pdf';
-      document.body.appendChild(a); a.click(); a.remove();
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      alert('Impossible de générer le PDF : ' + err.message);
-    } finally {
-      btn.textContent = texteOriginal; btn.disabled = false;
-    }
-  });
-  </script>
 <?php endif; ?>
 </main>
 
