@@ -83,6 +83,9 @@ function genererCvBleuMarine(array $cv): string {
       .item-sous { font-size: 9.5pt; color: #5B6472; margin-top: 0.3mm; }
       .item-dates { font-size: 8.5pt; color: #5B6472; font-style: italic; margin-top: 0.5mm; }
       .item-desc { font-size: 9.5pt; margin-top: 1.5mm; line-height: 1.45; color: #22262B; }
+
+      .liste-simple-principale { list-style: none; font-size: 9.5pt; line-height: 1.9; color: #22262B; }
+      .liste-simple-principale li::before { content: "• "; color: #17325C; font-weight: 700; }
     </style>
     </head>
     <body>
@@ -141,16 +144,6 @@ function genererCvBleuMarine(array $cv): string {
           </div>
         <?php endif; ?>
 
-        <?php if (!empty($autresComplementaires)): ?>
-          <div class="cote-bloc">
-            <div class="cote-titre">Complémentaire</div>
-            <ul class="liste-cote">
-              <?php foreach ($autresComplementaires as $ci): ?>
-                <li><b><?= e(libelleTypeComplementaire($ci['type'] ?? '')) ?> :</b> <?= e($ci['libelle'] ?? '') ?></li>
-              <?php endforeach; ?>
-            </ul>
-          </div>
-        <?php endif; ?>
       </div>
 
       <div class="colonne-principale">
@@ -194,6 +187,17 @@ function genererCvBleuMarine(array $cv): string {
                 </div>
               <?php endforeach; ?>
             </div>
+          </section>
+        <?php endif; ?>
+
+        <?php if (!empty($autresComplementaires)): ?>
+          <section class="bloc">
+            <div class="titre-section">Complémentaire</div>
+            <ul class="liste-simple-principale">
+              <?php foreach ($autresComplementaires as $ci): ?>
+                <li><b><?= e(libelleTypeComplementaire($ci['type'] ?? '')) ?> :</b> <?= e($ci['libelle'] ?? '') ?></li>
+              <?php endforeach; ?>
+            </ul>
           </section>
         <?php endif; ?>
       </div>

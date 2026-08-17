@@ -84,6 +84,9 @@ function genererCvOcre(array $cv): string {
       .item-sous { font-size: 9.5pt; color: #C8622C; font-weight: 700; margin-top: 0.3mm; }
       .item-dates { font-size: 9pt; color: #5B6472; font-weight: 700; white-space: nowrap; }
       .item-desc { font-size: 9.5pt; margin-top: 1.5mm; line-height: 1.45; color: #22262B; }
+
+      .liste-simple-principale { list-style: none; font-size: 9.5pt; line-height: 1.9; color: #22262B; }
+      .liste-simple-principale li::before { content: "• "; color: #C8622C; font-weight: 700; }
     </style>
     </head>
     <body>
@@ -150,14 +153,6 @@ function genererCvOcre(array $cv): string {
           </div>
         <?php endif; ?>
 
-        <?php if (!empty($autresComplementaires)): ?>
-          <div class="cote-bloc">
-            <div class="cote-titre">Complémentaire</div>
-            <?php foreach ($autresComplementaires as $ci): ?>
-              <div class="coord-ligne"><b><?= e(libelleTypeComplementaire($ci['type'] ?? '')) ?> :</b> <?= e($ci['libelle'] ?? '') ?></div>
-            <?php endforeach; ?>
-          </div>
-        <?php endif; ?>
       </div>
 
       <div class="colonne-principale">
@@ -190,6 +185,17 @@ function genererCvOcre(array $cv): string {
                   <?php if (!empty($exp['description'])): ?><div class="item-desc"><?= nl2br(e($exp['description'])) ?></div><?php endif; ?>
                 </div>
               <?php endforeach; ?>
+            </section>
+          <?php endif; ?>
+
+          <?php if (!empty($autresComplementaires)): ?>
+            <section class="bloc">
+              <div class="titre-section">Complémentaire</div>
+              <ul class="liste-simple-principale">
+                <?php foreach ($autresComplementaires as $ci): ?>
+                  <li><b><?= e(libelleTypeComplementaire($ci['type'] ?? '')) ?> :</b> <?= e($ci['libelle'] ?? '') ?></li>
+                <?php endforeach; ?>
+              </ul>
             </section>
           <?php endif; ?>
         </div>
