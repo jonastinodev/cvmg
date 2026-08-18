@@ -108,6 +108,17 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
     padding: 2.5mm 2mm; margin-right: -2mm; min-height: 40px; }
   .btn:disabled { opacity: .5; cursor: not-allowed; }
 
+  /* Rédaction assistée : le bouton se pose sur la ligne du label, à droite. */
+  .label-ia { display: flex; align-items: flex-end; justify-content: space-between; gap: 3mm; }
+  .btn-ia { background: var(--app-bleu-clair); color: var(--app-bleu); border: 1px solid #C3DAFF;
+    font-family: inherit; font-size: 9pt; font-weight: 600; cursor: pointer; white-space: nowrap;
+    padding: 2mm 3.5mm; border-radius: 5mm; min-height: 36px; margin-bottom: 1.5mm;
+    display: inline-flex; align-items: center; gap: 1.5mm; }
+  .btn-ia:hover { background: #DBE9FF; }
+  .btn-ia:disabled { opacity: .6; cursor: wait; }
+  .statut-ia { font-size: 8.5pt; margin-top: 1mm; }
+  .statut-ia.erreur { color: var(--app-rouge); }
+
   /* Barre d'action collante sur mobile : l'étape 1 fait à elle seule 1,7 écran
      de haut, il fallait scroller jusqu'en bas pour trouver « Suivant » à chaque
      étape. Elle redevient un simple bloc en pied de carte sur grand écran. */
@@ -344,8 +355,12 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
         <label for="titrePro">Métier ou poste recherché <span class="requis">*</span></label>
         <input type="text" id="titrePro" required autocomplete="organization-title" placeholder="Ex : Vendeur, Agent de sécurité, Couturière">
 
-        <label for="profilCourt">Courte description <span class="facultatif">(facultatif)</span></label>
+        <div class="label-ia">
+          <label for="profilCourt">Courte description <span class="facultatif">(facultatif)</span></label>
+          <button type="button" class="btn-ia" id="btnIaProfil">✨ Rédiger pour moi</button>
+        </div>
         <textarea id="profilCourt" placeholder="Ex : Personne sérieuse, motivée et ponctuelle, à la recherche d'un emploi dans la vente."></textarea>
+        <p class="statut-ia" id="statutIaProfil"></p>
 
         <div class="ligne-2">
           <div><label for="telephone">Téléphone <span class="requis">*</span></label><input type="tel" id="telephone" required autocomplete="tel" inputmode="tel" placeholder="034 12 345 67"></div>
@@ -658,6 +673,60 @@ lierChamp('adresse', 'adresse', cv.personnel);
 lierChamp('dateNaissance', 'dateNaissance', cv.personnel);
 lierChamp('permis', 'permis', cv.personnel);
 
+// ===================== RÉDACTION ASSISTÉE PAR IA =====================
+// Un seul chemin pour les deux boutons (accroche du profil et missions d'une
+// expérience) : c'est generer-texte.php qui choisit la consigne selon le "type".
+// Le contexte est construit à la demande, au moment du clic, pour refléter ce
+// que l'utilisateur vient de saisir.
+async function genererTexteIA({ bouton, zone, statut, type, contexte }) {
+  if (zone.value.trim() && !confirm("Remplacer le texte déjà saisi par une nouvelle proposition ?")) return;
+
+  const libelleOrigine = bouton.textContent;
+  bouton.disabled = true;
+  bouton.textContent = 'Rédaction…';
+  statut.className = 'statut-ia';
+  statut.textContent = '';
+
+  try {
+    const res = await fetch('generer-texte.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type, contexte: contexte() }),
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok || !data || data.erreur) {
+      throw new Error((data && data.erreur) || `Erreur serveur (HTTP ${res.status})`);
+    }
+
+    zone.value = data.texte;
+    // Rejoue l'événement d'entrée : c'est lui qui met à jour l'objet cv,
+    // le brouillon local et l'aperçu (cf. lierChamp / creerBlocExperience).
+    zone.dispatchEvent(new Event('input', { bubbles: true }));
+    statut.textContent = 'Proposition de l’IA — relisez et corrigez librement.';
+  } catch (err) {
+    statut.className = 'statut-ia erreur';
+    statut.textContent = err.message;
+  } finally {
+    bouton.disabled = false;
+    bouton.textContent = libelleOrigine;
+  }
+}
+
+document.getElementById('btnIaProfil').addEventListener('click', (e) => genererTexteIA({
+  bouton: e.currentTarget,
+  zone: document.getElementById('profilCourt'),
+  statut: document.getElementById('statutIaProfil'),
+  type: 'profil',
+  contexte: () => ({
+    titrePro: cv.personnel.titrePro,
+    ville: cv.personnel.ville,
+    sansExperience: cv.sansExperience,
+    experiences: cv.experiences.map(x => [x.poste, x.employeur].filter(Boolean).join(' chez ')).filter(Boolean),
+    competences: cv.competences,
+    qualites: cv.qualites,
+  }),
+}));
+
 // --- Photo de profil : redimensionnée et recadrée en carré côté navigateur
 // (canvas), puis stockée directement en data URI dans le CV. Pas d'envoi au
 // serveur ni de stockage de fichier séparé : ça reste cohérent avec le reste
@@ -960,8 +1029,12 @@ function creerBlocExperience(exp, index) {
       <div><label>Date de fin</label><input type="text" class="c-fin" placeholder="Ex : Février 2025"></div>
     </div>
     <div class="case-a-cocher" style="margin-top:2mm"><input type="checkbox" class="c-actuel"><label>C'est mon poste actuel</label></div>
-    <label>Description des missions <span class="facultatif">(facultatif)</span></label>
-    <textarea class="c-description"></textarea>`;
+    <div class="label-ia">
+      <label>Description des missions <span class="facultatif">(facultatif)</span></label>
+      <button type="button" class="btn-ia c-ia">✨ Rédiger pour moi</button>
+    </div>
+    <textarea class="c-description"></textarea>
+    <p class="statut-ia c-ia-statut"></p>`;
 
   const champs = { poste:'.c-poste', employeur:'.c-employeur', lieu:'.c-lieu', debut:'.c-debut', fin:'.c-fin', description:'.c-description' };
   for (const [cle, sel] of Object.entries(champs)) {
@@ -974,6 +1047,17 @@ function creerBlocExperience(exp, index) {
   const champFin = bloc.querySelector('.c-fin');
   champFin.disabled = exp.actuel;
   caseActuel.addEventListener('change', () => { exp.actuel = caseActuel.checked; champFin.disabled = exp.actuel; sauvegarderLocalement(); mettreAJourApercu(); });
+
+  bloc.querySelector('.c-ia').addEventListener('click', (e) => genererTexteIA({
+    bouton: e.currentTarget,
+    zone: bloc.querySelector('.c-description'),
+    statut: bloc.querySelector('.c-ia-statut'),
+    type: 'mission',
+    contexte: () => ({
+      poste: exp.poste, employeur: exp.employeur, lieu: exp.lieu,
+      debut: exp.debut, fin: exp.fin, actuel: !!exp.actuel,
+    }),
+  }));
 
   bloc.querySelector('.btn-supprimer').addEventListener('click', () => {
     cv.experiences.splice(index, 1); sauvegarderLocalement(); redessinerExperiences(); mettreAJourApercu();
