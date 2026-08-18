@@ -108,14 +108,27 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
     padding: 2.5mm 2mm; margin-right: -2mm; min-height: 40px; }
   .btn:disabled { opacity: .5; cursor: not-allowed; }
 
-  /* Rédaction assistée : le bouton se pose sur la ligne du label, à droite. */
-  .label-ia { display: flex; align-items: flex-end; justify-content: space-between; gap: 3mm; }
-  .btn-ia { background: var(--app-bleu-clair); color: var(--app-bleu); border: 1px solid #C3DAFF;
-    font-family: inherit; font-size: 9pt; font-weight: 600; cursor: pointer; white-space: nowrap;
-    padding: 2mm 3.5mm; border-radius: 5mm; min-height: 36px; margin-bottom: 1.5mm;
-    display: inline-flex; align-items: center; gap: 1.5mm; }
-  .btn-ia:hover { background: #DBE9FF; }
-  .btn-ia:disabled { opacity: .6; cursor: wait; }
+  /* Rédaction assistée : bouton flottant à l'intérieur du textarea. */
+  .zona-ia { position: relative; }
+  /* Le textarea cède 36px en bas pour que le bouton ne recouvre pas le texte saisi. */
+  .zona-ia textarea { padding-bottom: 36px; }
+  .btn-ia-flotant {
+    position: absolute; bottom: 7px; right: 8px;
+    background: var(--app-bleu-clair); color: var(--app-bleu);
+    border: 1px solid #C3DAFF;
+    font-family: inherit; font-size: 8.5pt; font-weight: 700; cursor: pointer;
+    white-space: nowrap; padding: 1.5mm 3mm; border-radius: 5mm;
+    display: inline-flex; align-items: center; gap: 1.5mm; line-height: 1;
+    opacity: 0; pointer-events: none;
+    transition: opacity .15s ease, background .15s ease;
+  }
+  /* Apparaît au survol ou au focus de la zone sur desktop */
+  .zona-ia:hover .btn-ia-flotant,
+  .zona-ia:focus-within .btn-ia-flotant { opacity: 1; pointer-events: auto; }
+  /* Toujours visible sur mobile (pas de survol au doigt) */
+  @media (max-width: 600px) { .btn-ia-flotant { opacity: 1; pointer-events: auto; } }
+  .btn-ia-flotant:hover { background: #DBE9FF; }
+  .btn-ia-flotant:disabled { opacity: .5 !important; cursor: wait; pointer-events: none; }
   .statut-ia { font-size: 8.5pt; margin-top: 1mm; }
   .statut-ia.erreur { color: var(--app-rouge); }
 
@@ -355,11 +368,11 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
         <label for="titrePro">Métier ou poste recherché <span class="requis">*</span></label>
         <input type="text" id="titrePro" required autocomplete="organization-title" placeholder="Ex : Vendeur, Agent de sécurité, Couturière">
 
-        <div class="label-ia">
-          <label for="profilCourt">Courte description <span class="facultatif">(facultatif)</span></label>
-          <button type="button" class="btn-ia" id="btnIaProfil">✨ Rédiger pour moi</button>
+        <label for="profilCourt">Courte description <span class="facultatif">(facultatif)</span></label>
+        <div class="zona-ia">
+          <textarea id="profilCourt" placeholder="Ex : Personne sérieuse, motivée et ponctuelle, à la recherche d'un emploi dans la vente."></textarea>
+          <button type="button" class="btn-ia-flotant" id="btnIaProfil" aria-label="Rédiger avec l'IA">✨ Rédiger</button>
         </div>
-        <textarea id="profilCourt" placeholder="Ex : Personne sérieuse, motivée et ponctuelle, à la recherche d'un emploi dans la vente."></textarea>
         <p class="statut-ia" id="statutIaProfil"></p>
 
         <div class="ligne-2">
@@ -1029,11 +1042,11 @@ function creerBlocExperience(exp, index) {
       <div><label>Date de fin</label><input type="text" class="c-fin" placeholder="Ex : Février 2025"></div>
     </div>
     <div class="case-a-cocher" style="margin-top:2mm"><input type="checkbox" class="c-actuel"><label>C'est mon poste actuel</label></div>
-    <div class="label-ia">
-      <label>Description des missions <span class="facultatif">(facultatif)</span></label>
-      <button type="button" class="btn-ia c-ia">✨ Rédiger pour moi</button>
+    <label>Description des missions <span class="facultatif">(facultatif)</span></label>
+    <div class="zona-ia">
+      <textarea class="c-description"></textarea>
+      <button type="button" class="btn-ia-flotant c-ia" aria-label="Rédiger avec l'IA">✨ Rédiger</button>
     </div>
-    <textarea class="c-description"></textarea>
     <p class="statut-ia c-ia-statut"></p>`;
 
   const champs = { poste:'.c-poste', employeur:'.c-employeur', lieu:'.c-lieu', debut:'.c-debut', fin:'.c-fin', description:'.c-description' };
