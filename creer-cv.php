@@ -4,6 +4,7 @@ $estConnecte = !empty($_SESSION['utilisateur_id']);
 $nomUtilisateur = $estConnecte ? $_SESSION['utilisateur_nom'] : null;
 $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
 $metiersJson    = file_get_contents(__DIR__ . '/metiers.json') ?: '[]';
+$metiers        = json_decode($metiersJson, true) ?: [];
 $estOperateur   = !empty($_SESSION['est_operateur']);
 ?>
 <!DOCTYPE html>
@@ -312,24 +313,6 @@ $estOperateur   = !empty($_SESSION['est_operateur']);
   }
   .btn-express:hover { background: #B45A08; }
 
-  /* ── AUTOCOMPLETE MÉTIER ───────────────────────────── */
-  .autocomplete-wrap { position: relative; }
-  .autocomplete-liste {
-    position: absolute; top: calc(100% + 2px); left: 0; right: 0; z-index: 100;
-    background: #fff; border: 1.5px solid var(--app-bleu); border-radius: 2mm;
-    box-shadow: 0 4px 16px rgba(24,99,242,.13);
-    max-height: 220px; overflow-y: auto;
-    list-style: none; padding: 4px 0; margin: 0;
-  }
-  .autocomplete-liste.hidden { display: none; }
-  .autocomplete-liste li {
-    padding: 3mm; cursor: pointer;
-    font-size: 16px; font-family: inherit; color: #1A2035; line-height: 1.4;
-  }
-  @media (min-width: 600px) { .autocomplete-liste li { font-size: 10.5pt; } }
-  .autocomplete-liste li:hover,
-  .autocomplete-liste li.actif { background: var(--app-bleu-clair); }
-  .autocomplete-liste li mark { background: none; color: var(--app-bleu); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -382,12 +365,23 @@ $estOperateur   = !empty($_SESSION['est_operateur']);
         <p class="sous-titre">Ce titre apparaîtra en grand sur votre CV.</p>
 
         <label for="titrePro">Métier ou poste recherché <span class="requis">*</span></label>
-        <div class="autocomplete-wrap" id="wrap-titrePro">
-          <input type="text" id="titrePro" required autocomplete="off"
-                 placeholder="Ex : Vendeur, Agent de sécurité, Couturière"
-                 role="combobox" aria-autocomplete="list" aria-expanded="false"
-                 aria-controls="liste-titrePro" aria-activedescendant="">
-          <ul id="liste-titrePro" class="autocomplete-liste" role="listbox" aria-label="Métiers disponibles"></ul>
+        <!-- Liste déroulante native : sur Android elle s'ouvre en plein écran,
+             ce qui reste plus rapide et plus lisible sur un téléphone d'entrée
+             de gamme qu'une liste de suggestions maison. -->
+        <select id="titrePro" required>
+          <option value="">— Choisissez votre métier —</option>
+          <?php foreach ($metiers as $m): ?>
+            <option value="<?= htmlspecialchars($m) ?>"><?= htmlspecialchars($m) ?></option>
+          <?php endforeach; ?>
+          <option value="__autre">Autre métier (à préciser)</option>
+        </select>
+
+        <!-- Filet de sécurité : les 83 métiers ne couvrent pas tout, et un
+             utilisateur dont le métier manque doit pouvoir avancer. -->
+        <div id="wrap-titrePro-autre" class="hidden" style="margin-top:3mm">
+          <label for="titreProAutre">Précisez votre métier <span class="requis">*</span></label>
+          <input type="text" id="titreProAutre" autocomplete="off"
+                 placeholder="Ex : Réparateur de panneaux solaires">
         </div>
 
         <label for="profilCourt" style="margin-top:5mm">Courte description <span class="facultatif">(facultatif)</span></label>
@@ -720,7 +714,13 @@ function validerEtape(n) {
   const champs = CHAMPS_REQUIS[n] || [];
   let premierChampFautif = null;
   champs.forEach(champ => {
-    const el = document.getElementById(champ.id);
+    let el = document.getElementById(champ.id);
+    // Le métier « Autre » reporte la saisie sur un champ libre : c'est lui
+    // qu'il faut contrôler, sinon la valeur sentinelle « __autre » suffirait
+    // à passer l'étape avec un métier vide.
+    if (champ.id === 'titrePro' && el && el.value === '__autre') {
+      el = document.getElementById('titreProAutre');
+    }
     if (!el || !el.value.trim()) {
       if (el) {
         el.classList.add('en-erreur');
@@ -759,89 +759,61 @@ lierChamp('nom', 'nom', cv.personnel);
 lierChamp('prenom', 'prenom', cv.personnel);
 document.getElementById('nom').addEventListener('input', () => majApercuPhoto());
 document.getElementById('prenom').addEventListener('input', () => majApercuPhoto());
-lierChamp('titrePro', 'titrePro', cv.personnel);
+// titrePro n'est pas lié par lierChamp : c'est un <select> doublé d'un
+// champ libre, géré par initSelectTitrePro() plus bas.
 lierChamp('profilCourt', 'profilCourt', cv.personnel);
 
-// ── AUTOCOMPLETE MÉTIER ──────────────────────────────────
-function normaliserTexte(s) {
-  return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-}
+// ── Métier : liste déroulante + saisie libre en repli ──────────
+// Le <select> est rempli côté serveur. Ici on ne gère que deux choses :
+// répercuter le choix dans l'état `cv`, et ouvrir le champ texte quand
+// le métier ne figure pas dans la liste.
+(function initSelectTitrePro() {
+  const select     = document.getElementById('titrePro');
+  const wrapAutre  = document.getElementById('wrap-titrePro-autre');
+  const inputAutre = document.getElementById('titreProAutre');
 
-function surligner(metier, q) {
-  const idx = normaliserTexte(metier).indexOf(q);
-  if (idx < 0) return metier;
-  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  return esc(metier.slice(0, idx))
-    + '<mark>' + esc(metier.slice(idx, idx + q.length)) + '</mark>'
-    + esc(metier.slice(idx + q.length));
-}
-
-(function initAutocompleteTitrePro() {
-  const input = document.getElementById('titrePro');
-  const liste = document.getElementById('liste-titrePro');
-  let indexActif = -1;
-
-  function afficherSuggestions(valeur) {
-    const q = normaliserTexte(valeur.trim());
-    liste.innerHTML = '';
-    indexActif = -1;
-    if (!q) { fermerListe(); return; }
-    const trouvés = METIERS_CV.filter(m => normaliserTexte(m).includes(q)).slice(0, 8);
-    if (!trouvés.length) { fermerListe(); return; }
-    trouvés.forEach((metier, i) => {
-      const li = document.createElement('li');
-      li.setAttribute('role', 'option');
-      li.id = 'metier-opt-' + i;
-      li.innerHTML = surligner(metier, q);
-      li.addEventListener('mousedown', e => { e.preventDefault(); selectionner(metier); });
-      liste.appendChild(li);
-    });
-    liste.classList.remove('hidden');
-    input.setAttribute('aria-expanded', 'true');
+  function basculerAutre(actif) {
+    wrapAutre.classList.toggle('hidden', !actif);
+    inputAutre.required = actif;
+    if (actif) inputAutre.focus();
   }
 
-  function fermerListe() {
-    liste.classList.add('hidden');
-    liste.innerHTML = '';
-    input.setAttribute('aria-expanded', 'false');
-    input.removeAttribute('aria-activedescendant');
-    indexActif = -1;
-  }
-
-  function selectionner(metier) {
-    input.value = metier;
-    cv.personnel.titrePro = metier;
-    fermerListe();
-    input.focus();
-  }
-
-  function majActif() {
-    liste.querySelectorAll('li').forEach((li, i) => {
-      li.classList.toggle('actif', i === indexActif);
-      if (i === indexActif) {
-        input.setAttribute('aria-activedescendant', li.id);
-        li.scrollIntoView({ block: 'nearest' });
-      }
-    });
-    if (indexActif === -1) input.removeAttribute('aria-activedescendant');
-  }
-
-  input.addEventListener('input', () => {
-    cv.personnel.titrePro = input.value;
-    afficherSuggestions(input.value);
+  select.addEventListener('change', () => {
+    if (select.value === '__autre') {
+      basculerAutre(true);
+      cv.personnel.titrePro = inputAutre.value.trim();
+    } else {
+      basculerAutre(false);
+      inputAutre.value = '';
+      cv.personnel.titrePro = select.value;
+    }
+    sauvegarderLocalement(); mettreAJourApercu();
   });
 
-  input.addEventListener('keydown', e => {
-    const items = liste.querySelectorAll('li');
-    if (!items.length) return;
-    if      (e.key === 'ArrowDown')              { e.preventDefault(); indexActif = Math.min(indexActif + 1, items.length - 1); majActif(); }
-    else if (e.key === 'ArrowUp')               { e.preventDefault(); indexActif = Math.max(indexActif - 1, -1); majActif(); }
-    else if (e.key === 'Enter' && indexActif >= 0) { e.preventDefault(); selectionner(items[indexActif].textContent); }
-    else if (e.key === 'Escape')                 fermerListe();
+  inputAutre.addEventListener('input', () => {
+    cv.personnel.titrePro = inputAutre.value.trim();
+    sauvegarderLocalement(); mettreAJourApercu();
   });
 
-  input.addEventListener('blur', () => setTimeout(fermerListe, 150));
-  document.addEventListener('click', e => { if (!e.target.closest('#wrap-titrePro')) fermerListe(); });
+  // Restauration d'un brouillon ou d'un CV existant : si le métier
+  // enregistré n'est plus (ou n'a jamais été) dans la liste, on bascule
+  // sur la saisie libre plutôt que de perdre silencieusement la valeur.
+  window.appliquerTitrePro = function (valeur) {
+    const v = (valeur || '').trim();
+    if (!v) { select.value = ''; basculerAutre(false); return; }
+    if (METIERS_CV.includes(v)) {
+      select.value = v;
+      basculerAutre(false);
+    } else {
+      select.value = '__autre';
+      wrapAutre.classList.remove('hidden');
+      inputAutre.required = true;
+      inputAutre.value = v;
+    }
+  };
+
+  // État initial : reprend le métier du brouillon local s'il y en a un.
+  window.appliquerTitrePro(cv.personnel.titrePro);
 })();
 lierChamp('telephone', 'telephone', cv.personnel);
 lierChamp('email', 'email', cv.personnel);
@@ -1539,7 +1511,12 @@ async function chargerCVExistant(id) {
       ville: d.personnel.ville, adresse: d.personnel.adresse, dateNaissance: d.personnel.date_naissance,
       permis: d.personnel.permis_conduire ? 'oui' : '', photo: d.personnel.photo_url || '',
     });
-    champsPersonnel.forEach(cle => { const el = document.getElementById(cle === 'titrePro' ? 'titrePro' : cle === 'profilCourt' ? 'profilCourt' : cle); if (el) el.value = cv.personnel[cle] || ''; });
+    champsPersonnel.forEach(cle => {
+      if (cle === 'titrePro') return; // géré par appliquerTitrePro (select + champ libre)
+      const el = document.getElementById(cle);
+      if (el) el.value = cv.personnel[cle] || '';
+    });
+    appliquerTitrePro(cv.personnel.titrePro);
     majApercuPhoto();
 
     cv.experiences = (d.experiences || []).map(e => ({ poste:e.poste, employeur:e.employeur, lieu:e.lieu, debut:e.date_debut, fin:e.date_fin, actuel:!!e.poste_actuel, description:e.description }));
