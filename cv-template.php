@@ -81,8 +81,65 @@ function separerComplementaire(array $complementaire): array {
     return [$interets, $autres];
 }
 
+// Interprète une date libre francophone en [année, mois].
+// Exemples : "Mars 2024" → [2024, 3] | "2023" → [2023, 0] | "" → [0, 0]
+// "Aujourd'hui" / "Présent" → [9999, 12] pour remonter les postes en cours.
+function parseDateFr(string $texte): array {
+    static $mois = [
+        'janvier'=>1,'février'=>2,'fevrier'=>2,'mars'=>3,'avril'=>4,
+        'mai'=>5,'juin'=>6,'juillet'=>7,'août'=>8,'aout'=>8,
+        'septembre'=>9,'octobre'=>10,'novembre'=>11,'décembre'=>12,'decembre'=>12,
+    ];
+    $t = trim(mb_strtolower($texte, 'UTF-8'));
+    if ($t === '' || $t === 'présent' || $t === 'present' || $t === "aujourd'hui" || $t === "aujourd'hui") {
+        return [9999, 12];
+    }
+    if (preg_match('/^(\d{4})$/', $t, $m)) return [(int)$m[1], 0];
+    if (preg_match('/^([a-záàâäéèêëîïôùûü]+)\.?\s+(\d{4})$/u', $t, $m)) {
+        return [(int)$m[2], $mois[$m[1]] ?? 0];
+    }
+    if (preg_match('/(\d{4})/', $t, $m)) return [(int)$m[1], 0];
+    return [0, 0];
+}
+
+// Trie un tableau d'entrées CV du plus récent au plus ancien.
+// $cleFin    : clé contenant la date de fin (texte libre)
+// $cleActuel : clé booléenne "poste/formation en cours" (priorité absolue si présente)
+// $cleDebut  : clé de la date de début (départage en cas d'égalité sur la fin)
+function trierParDateRecente(array &$items, string $cleFin, string $cleActuel = '', string $cleDebut = ''): void {
+    usort($items, function (array $a, array $b) use ($cleFin, $cleActuel, $cleDebut): int {
+        // En cours → toujours en premier (indépendamment de la date saisie)
+        $aActuel = $cleActuel !== '' && !empty($a[$cleActuel]);
+        $bActuel = $cleActuel !== '' && !empty($b[$cleActuel]);
+        if ($aActuel !== $bActuel) return $aActuel ? -1 : 1;
+
+        [$aAn, $aMois] = parseDateFr($a[$cleFin] ?? '');
+        [$bAn, $bMois] = parseDateFr($b[$cleFin] ?? '');
+        if ($aAn !== $bAn) return $bAn - $aAn;
+        if ($aMois !== $bMois) return $bMois - $aMois;
+
+        if ($cleDebut !== '') {
+            [$aAnD, $aMoisD] = parseDateFr($a[$cleDebut] ?? '');
+            [$bAnD, $bMoisD] = parseDateFr($b[$cleDebut] ?? '');
+            if ($aAnD !== $bAnD) return $bAnD - $aAnD;
+            if ($aMoisD !== $bMoisD) return $bMoisD - $aMoisD;
+        }
+        return 0;
+    });
+}
+
 function genererCvHtml(array $cv): string {
     $id = $cv['modele'] ?? 'classique';
     $fonction = MODELES_CV[$id]['fonction'] ?? MODELES_CV['classique']['fonction'];
+
+    // Tri chronologique avant rendu : le plus récent apparaît toujours en tête,
+    // quel que soit l'ordre dans lequel l'utilisateur a rempli les blocs.
+    if (!empty($cv['experiences'])) {
+        trierParDateRecente($cv['experiences'], 'date_fin', 'poste_actuel', 'date_debut');
+    }
+    if (!empty($cv['formations'])) {
+        trierParDateRecente($cv['formations'], 'annee_fin', '', 'annee_debut');
+    }
+
     return $fonction($cv);
 }

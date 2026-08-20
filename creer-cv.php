@@ -28,8 +28,12 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
   body { font-family: 'Inter', Arial, sans-serif; color: var(--texte); background: #F0F2F5; margin: 0; }
 
   /* --- Bandeau de progression --- */
-  .entete { background: #fff; border-bottom: 1px solid #E4E7EB; padding: 3.5mm 5mm; position: sticky; top: 0; z-index: 10; }
-  .entete-interieur { max-width: 600px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 4mm; }
+  .entete { background: #fff; border-bottom: 1px solid #E4E7EB; padding: 3.5mm 5mm 0; position: sticky; top: 0; z-index: 10; }
+  .entete-interieur { max-width: 600px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 4mm; padding-bottom: 3.5mm; }
+
+  .progression-barre { height: 3px; background: #E4E7EB; }
+  .progression-remplissage { height: 100%; background: var(--app-bleu); border-radius: 0 2px 2px 0;
+    transition: width .35s cubic-bezier(.4,0,.2,1); }
   .logo { font-family: 'Poppins', sans-serif; font-weight: 700; color: var(--app-bleu-fonce); font-size: 14pt; text-decoration: none; }
   .logo span { color: var(--app-orange); }
 
@@ -40,8 +44,15 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
   .compte-lien:hover { text-decoration: underline; }
   .compte-lien.discret { color: var(--gris-texte); font-weight: 400; }
 
-  .etape-compteur { font-size: 8.5pt; font-weight: 600; color: var(--app-bleu); letter-spacing: .4pt;
-    text-transform: uppercase; margin-bottom: 2mm; }
+  .etape-compteur { font-size: 8pt; font-weight: 600; color: var(--gris-texte); letter-spacing: .4pt;
+    text-transform: uppercase; margin-bottom: 3mm; }
+
+  /* Transition douce entre écrans */
+  .etape:not(.hidden) { animation: etape-entrer .22s ease; }
+  @keyframes etape-entrer {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
 
   .pied-carte { margin-top: 7mm; padding-top: 4mm; border-top: 1px solid #EEF0F3; text-align: center; }
   .lien-reinitialiser { background: none; border: none; color: var(--gris-texte); font-size: 8.5pt;
@@ -306,6 +317,7 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
       <a href="connexion.php" class="compte-lien">Se connecter</a>
     <?php endif; ?>
   </div>
+  <div class="progression-barre"><div class="progression-remplissage" id="barreProgression" style="width:12.5%"></div></div>
 </div>
 
 <div class="conteneur">
@@ -313,18 +325,75 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
   <div class="colonne-form">
     <div class="carte">
 
-      <div class="etape-compteur" id="etapeLabel"></div>
+      <div class="etape-compteur" id="etapeLabel">Étape 1 sur 8</div>
 
-      <!-- ÉTAPE 1 -->
+      <!-- ÉTAPE 1 : Identité -->
       <div class="etape" data-etape="1">
-        <h2 class="titre-etape">Vos informations personnelles</h2>
-        <p class="sous-titre">Créons un CV qui vous ressemble.</p>
+        <h2 class="titre-etape">Comment vous appelez-vous ?</h2>
+        <p class="sous-titre">Votre nom apparaîtra en tête de votre CV.</p>
 
-        <button type="button" class="btn btn-secondaire" id="btnScanCIN" style="width:100%">📷 Scanner ma carte d'identité</button>
+        <button type="button" class="btn btn-secondaire" id="btnScanCIN" style="width:100%;margin-bottom:3mm">📷 Remplir depuis ma carte d'identité</button>
         <p class="aide" id="scanStatut"></p>
         <p class="aide" style="color:var(--app-orange)" id="scanConfirmation"></p>
 
-        <label>Photo <span class="facultatif">(facultatif)</span></label>
+        <label for="nom">Nom <span class="requis">*</span></label>
+        <input type="text" id="nom" required autocomplete="family-name" placeholder="Ex : RAKOTO">
+
+        <label for="prenom">Prénoms <span class="facultatif">(facultatif)</span></label>
+        <input type="text" id="prenom" autocomplete="given-name" placeholder="Ex : Jean">
+      </div>
+
+      <!-- ÉTAPE 2 : Métier -->
+      <div class="etape hidden" data-etape="2">
+        <h2 class="titre-etape">Quel métier cherchez-vous ?</h2>
+        <p class="sous-titre">Ce titre apparaîtra en grand sur votre CV.</p>
+
+        <label for="titrePro">Métier ou poste recherché <span class="requis">*</span></label>
+        <input type="text" id="titrePro" required autocomplete="organization-title" placeholder="Ex : Vendeur, Agent de sécurité, Couturière">
+
+        <label for="profilCourt" style="margin-top:5mm">Courte description <span class="facultatif">(facultatif)</span></label>
+        <div class="zona-ia">
+          <textarea id="profilCourt" placeholder="Ex : Personne sérieuse, motivée et ponctuelle, à la recherche d'un emploi dans la vente."></textarea>
+          <button type="button" class="btn-ia-flotant" id="btnIaProfil" aria-label="Rédiger avec l'IA">✨ Rédiger</button>
+        </div>
+        <p class="statut-ia" id="statutIaProfil"></p>
+      </div>
+
+      <!-- ÉTAPE 3 : Coordonnées -->
+      <div class="etape hidden" data-etape="3">
+        <h2 class="titre-etape">Comment vous joindre ?</h2>
+        <p class="sous-titre">Ces informations permettent aux employeurs de vous contacter.</p>
+
+        <label for="telephone">Téléphone <span class="requis">*</span></label>
+        <input type="tel" id="telephone" required autocomplete="tel" inputmode="tel" placeholder="034 12 345 67">
+
+        <label for="email">E-mail <span class="facultatif">(facultatif)</span></label>
+        <input type="email" id="email" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false">
+
+        <label for="ville">Ville / Région <span class="requis">*</span></label>
+        <input type="text" id="ville" required autocomplete="address-level2" placeholder="Ex : Antananarivo">
+
+        <label for="adresse">Adresse <span class="facultatif">(facultatif)</span></label>
+        <input type="text" id="adresse" autocomplete="street-address">
+
+        <div class="ligne-2">
+          <div>
+            <label for="dateNaissance">Date de naissance <span class="facultatif">(facultatif)</span></label>
+            <input type="date" id="dateNaissance" autocomplete="bday">
+          </div>
+          <div>
+            <label for="permis">Permis de conduire <span class="facultatif">(facultatif)</span></label>
+            <select id="permis"><option value="">Ne pas préciser</option><option value="oui">Oui</option><option value="non">Non</option></select>
+          </div>
+        </div>
+      </div>
+
+      <!-- ÉTAPE 4 : Style du CV -->
+      <div class="etape hidden" data-etape="4">
+        <h2 class="titre-etape">Quel style vous plaît ?</h2>
+        <p class="sous-titre">La mise en page peut être changée à tout moment.</p>
+
+               <label style="margin-top:3mm">Photo <span class="facultatif">(facultatif)</span></label>
         <div class="zone-photo">
           <div class="photo-apercu" id="photoApercu">
             <span id="photoInitiales"></span>
@@ -336,9 +405,6 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
             <input type="file" id="photoFichier" accept="image/*" hidden>
           </div>
         </div>
-        <p class="aide" id="photoStatut"></p>
-
-        <p class="legende-requis">Les champs marqués d'un <span>*</span> sont obligatoires.</p>
 
         <label>Modèle de CV</label>
         <div class="zone-modeles" id="zoneModeles">
@@ -360,43 +426,14 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
           </div>
         </div>
 
-        <div class="ligne-2">
-          <div><label for="nom">Nom <span class="requis">*</span></label><input type="text" id="nom" required autocomplete="family-name" placeholder="Ex : RAKOTO"></div>
-          <div><label for="prenom">Prénom <span class="facultatif">(facultatif)</span></label><input type="text" id="prenom" autocomplete="given-name" placeholder="Ex : Jean"></div>
-        </div>
-
-        <label for="titrePro">Métier ou poste recherché <span class="requis">*</span></label>
-        <input type="text" id="titrePro" required autocomplete="organization-title" placeholder="Ex : Vendeur, Agent de sécurité, Couturière">
-
-        <label for="profilCourt">Courte description <span class="facultatif">(facultatif)</span></label>
-        <div class="zona-ia">
-          <textarea id="profilCourt" placeholder="Ex : Personne sérieuse, motivée et ponctuelle, à la recherche d'un emploi dans la vente."></textarea>
-          <button type="button" class="btn-ia-flotant" id="btnIaProfil" aria-label="Rédiger avec l'IA">✨ Rédiger</button>
-        </div>
-        <p class="statut-ia" id="statutIaProfil"></p>
-
-        <div class="ligne-2">
-          <div><label for="telephone">Téléphone <span class="requis">*</span></label><input type="tel" id="telephone" required autocomplete="tel" inputmode="tel" placeholder="034 12 345 67"></div>
-          <div><label for="email">E-mail <span class="facultatif">(facultatif)</span></label><input type="email" id="email" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false"></div>
-        </div>
-
-        <div class="ligne-2">
-          <div><label for="ville">Ville / Région <span class="requis">*</span></label><input type="text" id="ville" required autocomplete="address-level2" placeholder="Ex : Antananarivo"></div>
-          <div><label for="adresse">Adresse <span class="facultatif">(facultatif)</span></label><input type="text" id="adresse" autocomplete="street-address"></div>
-        </div>
-
-        <div class="ligne-2">
-          <div><label for="dateNaissance">Date de naissance <span class="facultatif">(facultatif)</span></label><input type="date" id="dateNaissance" autocomplete="bday"></div>
-          <div><label for="permis">Permis de conduire <span class="facultatif">(facultatif)</span></label>
-            <select id="permis"><option value="">Ne pas préciser</option><option value="oui">Oui</option><option value="non">Non</option></select>
-          </div>
-        </div>
+ 
+        <p class="aide" id="photoStatut"></p>
       </div>
 
-      <!-- ÉTAPE 2 -->
-      <div class="etape hidden" data-etape="2">
+      <!-- ÉTAPE 5 : Expériences -->
+      <div class="etape hidden" data-etape="5">
         <h2 class="titre-etape">Vos expériences</h2>
-        <p class="sous-titre">Emplois, stages, missions, bénévolat, projets personnels — tout compte.</p>
+        <p class="sous-titre">Emplois, stages, missions, bénévolat, projets personnels; tout compte.</p>
 
         <div class="case-a-cocher">
           <input type="checkbox" id="sansExperience">
@@ -411,8 +448,8 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
         <button type="button" class="btn btn-lien" id="btnAjouterExperience">+ Ajouter une expérience</button>
       </div>
 
-      <!-- ÉTAPE 3 -->
-      <div class="etape hidden" data-etape="3">
+      <!-- ÉTAPE 6 : Formation -->
+      <div class="etape hidden" data-etape="6">
         <h2 class="titre-etape">Votre formation</h2>
         <p class="sous-titre">Diplômes, formations suivies, certifications.</p>
 
@@ -420,8 +457,8 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
         <button type="button" class="btn btn-lien" id="btnAjouterFormation">+ Ajouter une formation</button>
       </div>
 
-      <!-- ÉTAPE 4 -->
-      <div class="etape hidden" data-etape="4">
+      <!-- ÉTAPE 7 : Compétences -->
+      <div class="etape hidden" data-etape="7">
         <h2 class="titre-etape">Vos compétences</h2>
         <p class="sous-titre">Tapez une compétence puis appuyez sur Entrée pour l'ajouter.</p>
 
@@ -437,10 +474,10 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
         <button type="button" class="btn btn-lien" id="btnAjouterLangue">+ Ajouter une langue</button>
       </div>
 
-      <!-- ÉTAPE 5 -->
-      <div class="etape hidden" data-etape="5">
-        <h2 class="titre-etape">Informations complémentaires</h2>
-        <p class="sous-titre">Tout est facultatif — ne remplissez que ce qui vous concerne.</p>
+      <!-- ÉTAPE 8 : Compléments -->
+      <div class="etape hidden" data-etape="8">
+        <h2 class="titre-etape">Pour aller plus loin</h2>
+        <p class="sous-titre">Tout est facultatif ne remplissez que ce qui vous concerne.</p>
 
         <label for="saisieInteret">Centres d'intérêt</label>
         <div class="tags-zone" id="zoneInterets"><input type="text" id="saisieInteret" placeholder="Ex : Football, Couture, Lecture..."></div>
@@ -604,29 +641,33 @@ function sauvegarderLocalement() {
 
 // ===================== NAVIGATION ENTRE ÉTAPES =====================
 let etapeActuelle = 1;
-const NB_ETAPES = 5;
+const NB_ETAPES = 8;
 
 function afficherEtape(n) {
   document.querySelectorAll('.etape').forEach(el => el.classList.add('hidden'));
   document.querySelector(`.etape[data-etape="${n}"]`).classList.remove('hidden');
 
   document.getElementById('etapeLabel').textContent = `Étape ${n} sur ${NB_ETAPES}`;
+  document.getElementById('barreProgression').style.width = `${Math.round(n / NB_ETAPES * 100)}%`;
 
   document.getElementById('btnPrecedent').disabled = (n === 1);
   document.getElementById('btnSuivant').classList.toggle('hidden', n === NB_ETAPES);
   document.getElementById('btnVoirApercu').classList.toggle('hidden', n !== NB_ETAPES);
 
   etapeActuelle = n;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
   mettreAJourApercu();
 }
 
-// --- Validation des champs obligatoires ---
-const CHAMPS_REQUIS_ETAPE1 = [
-  { id: 'nom', libelle: 'Merci d\'indiquer votre nom.' },
-  { id: 'titrePro', libelle: 'Indiquez le métier ou le poste que vous recherchez.' },
-  { id: 'telephone', libelle: 'Un numéro de téléphone est indispensable pour vous recontacter.' },
-  { id: 'ville', libelle: 'Indiquez votre ville ou votre région.' },
-];
+// --- Validation des champs obligatoires (répartis sur les 3 premières étapes) ---
+const CHAMPS_REQUIS = {
+  1: [{ id: 'nom', libelle: 'Merci d\'indiquer votre nom.' }],
+  2: [{ id: 'titrePro', libelle: 'Indiquez le métier ou le poste que vous recherchez.' }],
+  3: [
+    { id: 'telephone', libelle: 'Un numéro de téléphone est indispensable pour vous recontacter.' },
+    { id: 'ville',     libelle: 'Indiquez votre ville ou votre région.' },
+  ],
+};
 
 function effacerErreurs() {
   document.querySelectorAll('.en-erreur').forEach(el => el.classList.remove('en-erreur'));
@@ -635,21 +676,21 @@ function effacerErreurs() {
 
 function validerEtape(n) {
   effacerErreurs();
-  if (n !== 1) return true;
-
+  const champs = CHAMPS_REQUIS[n] || [];
   let premierChampFautif = null;
-  CHAMPS_REQUIS_ETAPE1.forEach(champ => {
+  champs.forEach(champ => {
     const el = document.getElementById(champ.id);
-    if (!el.value.trim()) {
-      el.classList.add('en-erreur');
-      const msg = document.createElement('p');
-      msg.className = 'msg-erreur-champ';
-      msg.textContent = champ.libelle;
-      el.parentNode.insertBefore(msg, el.nextSibling);
-      if (!premierChampFautif) premierChampFautif = el;
+    if (!el || !el.value.trim()) {
+      if (el) {
+        el.classList.add('en-erreur');
+        const msg = document.createElement('p');
+        msg.className = 'msg-erreur-champ';
+        msg.textContent = champ.libelle;
+        el.parentNode.insertBefore(msg, el.nextSibling);
+        if (!premierChampFautif) premierChampFautif = el;
+      }
     }
   });
-
   if (premierChampFautif) {
     premierChampFautif.focus();
     premierChampFautif.scrollIntoView({ block: 'center', behavior: 'smooth' });
@@ -715,7 +756,7 @@ async function genererTexteIA({ bouton, zone, statut, type, contexte }) {
     // Rejoue l'événement d'entrée : c'est lui qui met à jour l'objet cv,
     // le brouillon local et l'aperçu (cf. lierChamp / creerBlocExperience).
     zone.dispatchEvent(new Event('input', { bubbles: true }));
-    statut.textContent = 'Proposition de l’IA — relisez et corrigez librement.';
+    statut.textContent = 'Proposition de l’IA, relisez et corrigez librement.';
   } catch (err) {
     statut.className = 'statut-ia erreur';
     statut.textContent = err.message;
