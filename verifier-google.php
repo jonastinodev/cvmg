@@ -68,9 +68,11 @@ $stmt->execute([
     ':photo2' => $photo,
 ]);
 
-$stmt = $pdo->prepare('SELECT id FROM utilisateurs WHERE google_id = :gid');
+$stmt = $pdo->prepare('SELECT id, est_operateur FROM utilisateurs WHERE google_id = :gid');
 $stmt->execute([':gid' => $googleId]);
-$idUtilisateur = $stmt->fetchColumn();
+$ligne = $stmt->fetch(PDO::FETCH_ASSOC);
+$idUtilisateur = $ligne['id'];
+$estOperateur  = (bool)$ligne['est_operateur'];
 
 // --- 3. Ouvrir la session ---
 // Régénération de l'identifiant de session juste après l'authentification :
@@ -78,8 +80,9 @@ $idUtilisateur = $stmt->fetchColumn();
 // inutilisable une fois la personne authentifiée).
 session_regenerate_id(true);
 
-$_SESSION['utilisateur_id'] = $idUtilisateur;
+$_SESSION['utilisateur_id']    = $idUtilisateur;
 $_SESSION['utilisateur_email'] = $email;
-$_SESSION['utilisateur_nom'] = $nom;
+$_SESSION['utilisateur_nom']   = $nom;
+$_SESSION['est_operateur']     = $estOperateur;
 
 echo json_encode(['succes' => true, 'nom' => $nom], JSON_UNESCAPED_UNICODE);
