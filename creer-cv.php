@@ -3,6 +3,7 @@ require_once __DIR__ . '/session.php';
 $estConnecte = !empty($_SESSION['utilisateur_id']);
 $nomUtilisateur = $estConnecte ? $_SESSION['utilisateur_nom'] : null;
 $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
+$metiersJson = file_get_contents(__DIR__ . '/metiers.json') ?: '[]';
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -300,6 +301,25 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
   .cin-champ input:focus { outline: none; border-color: var(--cin-primaire); box-shadow: 0 0 0 2px var(--cin-conteneur); }
   .cin-btn-large { width: 100%; padding: 16px; margin-top: 8px; }
   .cin-statut { text-align: center; font-size: 13px; padding: 10px 0; color: var(--cin-sur-surface-variante); }
+
+  /* ── AUTOCOMPLETE MÉTIER ───────────────────────────── */
+  .autocomplete-wrap { position: relative; }
+  .autocomplete-liste {
+    position: absolute; top: calc(100% + 2px); left: 0; right: 0; z-index: 100;
+    background: #fff; border: 1.5px solid var(--app-bleu); border-radius: 2mm;
+    box-shadow: 0 4px 16px rgba(24,99,242,.13);
+    max-height: 220px; overflow-y: auto;
+    list-style: none; padding: 4px 0; margin: 0;
+  }
+  .autocomplete-liste.hidden { display: none; }
+  .autocomplete-liste li {
+    padding: 3mm; cursor: pointer;
+    font-size: 16px; font-family: inherit; color: #1A2035; line-height: 1.4;
+  }
+  @media (min-width: 600px) { .autocomplete-liste li { font-size: 10.5pt; } }
+  .autocomplete-liste li:hover,
+  .autocomplete-liste li.actif { background: var(--app-bleu-clair); }
+  .autocomplete-liste li mark { background: none; color: var(--app-bleu); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -349,7 +369,13 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
         <p class="sous-titre">Ce titre apparaîtra en grand sur votre CV.</p>
 
         <label for="titrePro">Métier ou poste recherché <span class="requis">*</span></label>
-        <input type="text" id="titrePro" required autocomplete="organization-title" placeholder="Ex : Vendeur, Agent de sécurité, Couturière">
+        <div class="autocomplete-wrap" id="wrap-titrePro">
+          <input type="text" id="titrePro" required autocomplete="off"
+                 placeholder="Ex : Vendeur, Agent de sécurité, Couturière"
+                 role="combobox" aria-autocomplete="list" aria-expanded="false"
+                 aria-controls="liste-titrePro" aria-activedescendant="">
+          <ul id="liste-titrePro" class="autocomplete-liste" role="listbox" aria-label="Métiers disponibles"></ul>
+        </div>
 
         <label for="profilCourt" style="margin-top:5mm">Courte description <span class="facultatif">(facultatif)</span></label>
         <div class="zona-ia">
@@ -613,6 +639,8 @@ $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
 </div>
 
 <script>
+const METIERS_CV = <?= $metiersJson ?>;
+
 // ===================== ÉTAT (tout en mémoire navigateur) =====================
 const CLE_LOCALE = 'cvmg_brouillon';
 
@@ -720,6 +748,88 @@ document.getElementById('nom').addEventListener('input', () => majApercuPhoto())
 document.getElementById('prenom').addEventListener('input', () => majApercuPhoto());
 lierChamp('titrePro', 'titrePro', cv.personnel);
 lierChamp('profilCourt', 'profilCourt', cv.personnel);
+
+// ── AUTOCOMPLETE MÉTIER ──────────────────────────────────
+function normaliserTexte(s) {
+  return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+}
+
+function surligner(metier, q) {
+  const idx = normaliserTexte(metier).indexOf(q);
+  if (idx < 0) return metier;
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return esc(metier.slice(0, idx))
+    + '<mark>' + esc(metier.slice(idx, idx + q.length)) + '</mark>'
+    + esc(metier.slice(idx + q.length));
+}
+
+(function initAutocompleteTitrePro() {
+  const input = document.getElementById('titrePro');
+  const liste = document.getElementById('liste-titrePro');
+  let indexActif = -1;
+
+  function afficherSuggestions(valeur) {
+    const q = normaliserTexte(valeur.trim());
+    liste.innerHTML = '';
+    indexActif = -1;
+    if (!q) { fermerListe(); return; }
+    const trouvés = METIERS_CV.filter(m => normaliserTexte(m).includes(q)).slice(0, 8);
+    if (!trouvés.length) { fermerListe(); return; }
+    trouvés.forEach((metier, i) => {
+      const li = document.createElement('li');
+      li.setAttribute('role', 'option');
+      li.id = 'metier-opt-' + i;
+      li.innerHTML = surligner(metier, q);
+      li.addEventListener('mousedown', e => { e.preventDefault(); selectionner(metier); });
+      liste.appendChild(li);
+    });
+    liste.classList.remove('hidden');
+    input.setAttribute('aria-expanded', 'true');
+  }
+
+  function fermerListe() {
+    liste.classList.add('hidden');
+    liste.innerHTML = '';
+    input.setAttribute('aria-expanded', 'false');
+    input.removeAttribute('aria-activedescendant');
+    indexActif = -1;
+  }
+
+  function selectionner(metier) {
+    input.value = metier;
+    cv.personnel.titrePro = metier;
+    fermerListe();
+    input.focus();
+  }
+
+  function majActif() {
+    liste.querySelectorAll('li').forEach((li, i) => {
+      li.classList.toggle('actif', i === indexActif);
+      if (i === indexActif) {
+        input.setAttribute('aria-activedescendant', li.id);
+        li.scrollIntoView({ block: 'nearest' });
+      }
+    });
+    if (indexActif === -1) input.removeAttribute('aria-activedescendant');
+  }
+
+  input.addEventListener('input', () => {
+    cv.personnel.titrePro = input.value;
+    afficherSuggestions(input.value);
+  });
+
+  input.addEventListener('keydown', e => {
+    const items = liste.querySelectorAll('li');
+    if (!items.length) return;
+    if      (e.key === 'ArrowDown')              { e.preventDefault(); indexActif = Math.min(indexActif + 1, items.length - 1); majActif(); }
+    else if (e.key === 'ArrowUp')               { e.preventDefault(); indexActif = Math.max(indexActif - 1, -1); majActif(); }
+    else if (e.key === 'Enter' && indexActif >= 0) { e.preventDefault(); selectionner(items[indexActif].textContent); }
+    else if (e.key === 'Escape')                 fermerListe();
+  });
+
+  input.addEventListener('blur', () => setTimeout(fermerListe, 150));
+  document.addEventListener('click', e => { if (!e.target.closest('#wrap-titrePro')) fermerListe(); });
+})();
 lierChamp('telephone', 'telephone', cv.personnel);
 lierChamp('email', 'email', cv.personnel);
 lierChamp('ville', 'ville', cv.personnel);
