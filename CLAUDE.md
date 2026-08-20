@@ -15,12 +15,11 @@ Pas de build, pas de bundler, pas de suite de tests. Le dossier est servi tel qu
 
 Tout est en français : commentaires, noms de variables et de fonctions (`repondreErreur`, `genererCvHtml`, `construireDonneesCV`, `utilisateur_id`, `donnees_json`), messages d'erreur renvoyés au navigateur. Le nouveau code doit suivre cette convention, y compris les clés JSON (`erreur`, `succes`, `donnees`).
 
-## Deux applications dans le même dossier
+## Une seule application
 
-1. **CVMG** (l'application actuelle) — générateur de CV : `accueil.html` → `connexion.php` → `creer-cv.php` / `mes-cv.php`, plus les pages statiques (`apropos.html`, `contact.html`, `confidentialite.html`, `conditions.html`).
-2. **Scan CIN autonome** (historique) — `index.html` + `script.js` → `ocr.php` → `ocr.html` + `script-ocr.js` → `enregistrer.php` → table `cin_enregistrements`. Le passage d'écran se fait par `localStorage["ocrResult"]`.
+`accueil.php` → `connexion.php` → `creer-cv.php` / `mes-cv.php` / `express-cv.php`, plus les pages statiques (`apropos.php`, `contact.php`, `confidentialite.php`, `conditions.php`).
 
-Le scan CIN a été **reporté à l'identique** dans une modale de `creer-cv.php` (fonctions préfixées `cin*`, ~ lignes 555-740), qui appelle le même `ocr.php`. Une correction du scan doit souvent être appliquée aux deux endroits ; ne pas supposer que l'ancien flux est mort tant qu'il n'est pas explicitement supprimé.
+Le flux CIN autonome historique (`index.html`, `script.js`, `ocr.html`, `script-ocr.js`, `enregistrer.php`, table `cin_enregistrements`) a été **supprimé** (commit `78894bf`, durcissement sécurité — l'ancien `enregistrer.php` écrivait des identités sans authentification). Seul `ocr.php` subsiste, appelé depuis deux points d'entrée distincts : la modale de scan de `creer-cv.php` (fonctions préfixées `cin*`) et l'écran 1 d'`express-cv.php`. Une correction du scan doit être vérifiée sur les deux appelants.
 
 ## Contrat de données du CV
 
@@ -58,7 +57,7 @@ Les couleurs du document CV (`--cv-bleu`, `--cv-vert`, `--cv-rouge`) sont volont
 
 ## Base de données
 
-MySQL via PDO, connexion ouverte à la main dans chaque script (pas de couche d'abstraction). Aucun outil de migration : les fichiers `creer_table*.sql` sont à exécuter manuellement dans phpMyAdmin, dans l'ordre `utilisateurs` → `cv` (clé étrangère). `cin_enregistrements` appartient au flux CIN historique.
+MySQL via PDO. Connexion centralisée dans `bdd()` (`bdd.php`) : tout script y accède via `bdd()`, jamais `new PDO` directement — `EMULATE_PREPARES` désactivé, erreurs jamais renvoyées avec le DSN ni les identifiants. Aucun outil de migration : les fichiers `creer_table*.sql` sont à exécuter manuellement dans phpMyAdmin, dans l'ordre `utilisateurs` → `cv` (clé étrangère).
 
 Le contenu du CV est stocké en JSON dans `cv.donnees_json` (LONGTEXT) — il n'y a pas de schéma relationnel pour les expériences/formations/compétences.
 
