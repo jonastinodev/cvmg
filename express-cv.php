@@ -621,6 +621,34 @@ function remplirResume() {
 
 // ── DÉMARRAGE ──────────────────────────────────────────────────
 afficherEcran(1);
+
+// ── QR CODE (tâche #19) ────────────────────────────────────────
+// Appelée par soumettreExpress() juste après la création du profil.
+// Utilise api.qrserver.com (service gratuit, pas de clé requise).
+function afficherQrCode(url, id) {
+    const zone = document.getElementById('zone-qrcode');
+    if (!zone) return;
+
+    const encoded = encodeURIComponent(url);
+    const taille  = 180;
+
+    const img = document.createElement('img');
+    img.src   = 'https://api.qrserver.com/v1/create-qr-code/?data=' + encoded
+              + '&size=' + taille + 'x' + taille + '&ecc=M&margin=6';
+    img.alt    = 'QR Code du profil';
+    img.width  = taille;
+    img.height = taille;
+    img.style.cssText = 'display:block;margin:0 auto;border-radius:10px;'
+                      + 'border:2px solid #A7F3D0;background:#fff;padding:4px;';
+
+    const legende = document.createElement('p');
+    legende.style.cssText = 'text-align:center;font-size:9pt;color:#065F46;margin-top:8px;';
+    legende.textContent = 'Scannez pour accéder au profil';
+
+    zone.innerHTML = '';
+    zone.appendChild(img);
+    zone.appendChild(legende);
+}
 </script>
 
 </body>
