@@ -204,6 +204,27 @@ $metiersJson  = file_get_contents(__DIR__ . '/metiers.json') ?: '[]';
     .ecran { animation: glisser .22s ease; }
     @keyframes glisser { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
   }
+
+  /* ── SCAN CIN ───────────────────────────────────────── */
+  #zone-scan-cin { margin-bottom: 20px; }
+  .btn-scan {
+    width: 100%; padding: 16px; margin-bottom: 10px;
+    border: 2px dashed var(--bordure); border-radius: 12px;
+    background: var(--blanc); cursor: pointer;
+    font-size: 10.5pt; font-family: inherit; color: var(--gris);
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    transition: border-color .15s, background .15s;
+  }
+  .btn-scan:hover { border-color: var(--orange); background: var(--orange-clair); }
+  .btn-scan.succes { border-color: #059669; background: #ECFDF5; color: #059669; border-style: solid; }
+  .btn-scan.chargement { opacity: .65; cursor: default; }
+  #scan-icone { font-size: 18pt; }
+  #scan-apercu { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+  #scan-apercu img { height: 60px; border-radius: 6px; object-fit: cover; border: 1px solid var(--bordure); }
+  #scan-statut { font-size: 10pt; min-height: 18px; }
+  #scan-statut.erreur  { color: #B00020; }
+  #scan-statut.succes  { color: #059669; font-weight: 600; }
+  #scan-statut.attente { color: var(--orange); }
 </style>
 </head>
 <body>
@@ -230,8 +251,18 @@ $metiersJson  = file_get_contents(__DIR__ . '/metiers.json') ?: '[]';
     <h2 class="titre-ecran">Scanner la carte d'identité</h2>
     <p class="sous-titre">Scannez la CIN du client, ou saisissez les informations à la main.</p>
 
-    <!-- Zone scan CIN — logique injectée à la tâche #13 -->
-    <div id="zone-scan-cin"></div>
+    <!-- Zone scan CIN ───────────────────────── -->
+    <div id="zone-scan-cin">
+      <input type="file" id="exp-cin-fichier" accept="image/*,application/pdf" multiple style="display:none">
+
+      <button type="button" id="btn-scan-cin" class="btn-scan">
+        <span id="scan-icone">📷</span>
+        <span id="scan-label">Scanner la CIN (1 PDF ou 2 photos recto/verso)</span>
+      </button>
+
+      <div id="scan-apercu"></div>
+      <p id="scan-statut"></p>
+    </div>
 
     <div class="champ-groupe">
       <label for="exp-nom">Nom <span class="requis">*</span></label>
@@ -393,6 +424,79 @@ function remplirResume() {
     : express.rayon ? express.rayon + ' km'
     : '—';
 }
+
+// ── SCAN CIN ───────────────────────────────────────────────────
+(function initScanCin() {
+  const btnScan   = document.getElementById('btn-scan-cin');
+  const fileInput = document.getElementById('exp-cin-fichier');
+  const apercu    = document.getElementById('scan-apercu');
+  const statut    = document.getElementById('scan-statut');
+  const scanLabel = document.getElementById('scan-label');
+  const scanIcone = document.getElementById('scan-icone');
+
+  function setStatut(msg, classe) {
+    statut.textContent = msg;
+    statut.className = classe || '';
+  }
+
+  function afficherApercu(files) {
+    apercu.innerHTML = '';
+    [...files].forEach(f => {
+      if (!f.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        apercu.appendChild(img);
+      };
+      reader.readAsDataURL(f);
+    });
+  }
+
+  async function lancerOCR(files) {
+    // Valider : 1 PDF ou 1-2 images
+    const estPdf  = files.length === 1 && files[0].type === 'application/pdf';
+    const estImgs = files.length >= 1 && files.length <= 2 && [...files].every(f => f.type.startsWith('image/'));
+    if (!estPdf && !estImgs) {
+      setStatut('Importez 1 PDF ou 1 à 2 photos (recto / verso).', 'erreur');
+      return;
+    }
+
+    btnScan.classList.add('chargement');
+    btnScan.disabled = true;
+    setStatut('Analyse de la carte en cours…', 'attente');
+    afficherApercu(files);
+
+    try {
+      const formData = new FormData();
+      [...files].forEach((f, i) => formData.append('file' + (i + 1), f));
+
+      const res  = await fetch('ocr.php', { method: 'POST', body: formData });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || (data && data.erreur)) throw new Error(data?.erreur || 'Erreur serveur');
+
+      // Pré-remplir l'état et les champs DOM
+      if (data.nom)    { express.nom    = data.nom;    document.getElementById('exp-nom').value    = data.nom; }
+      if (data.prenom) { express.prenom = data.prenom; document.getElementById('exp-prenom').value = data.prenom; }
+      if (data.cin)    { express.cin    = data.cin;    document.getElementById('exp-cin').value    = data.cin; }
+
+      scanIcone.textContent = '✅';
+      scanLabel.textContent = 'CIN scannée — modifiez si besoin';
+      btnScan.classList.replace('chargement', 'succes');
+      setStatut('Informations extraites automatiquement.', 'succes');
+    } catch (err) {
+      setStatut('Scan échoué : ' + err.message + ' — saisissez manuellement.', 'erreur');
+      btnScan.classList.remove('chargement');
+    } finally {
+      btnScan.disabled = false;
+    }
+  }
+
+  btnScan.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files.length) lancerOCR(fileInput.files);
+  });
+})();
 
 // ── DÉMARRAGE ──────────────────────────────────────────────────
 afficherEcran(1);
