@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/session.php';
-$estConnecte = !empty($_SESSION['utilisateur_id']);
+$estConnecte  = !empty($_SESSION['utilisateur_id']);
+$estOperateur = !empty($_SESSION['est_operateur']);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -58,12 +59,20 @@ $estConnecte = !empty($_SESSION['utilisateur_id']);
   /* Taille compacte (boutons intégrés à une ligne dense : nav) */
   .btn-sm { padding: 2.2mm 4.5mm; font-size: 9.5pt; border-radius: 1.6mm; }
 
+  --orange-express: #D97706; --orange-express-fonce: #B45A08;
+
   .btn-orange { background: var(--orange); border-color: var(--orange); color: #0B1F3D; }
   .btn-orange:hover { background: var(--orange-fonce); border-color: var(--orange-fonce); }
   .btn-outline { background: none; color: var(--bleu); border-color: var(--bleu); }
   .btn-outline:hover { background: var(--bleu-clair); }
   .btn-blanc { background: #fff; border-color: #fff; color: var(--bleu); }
   .btn-blanc:hover { background: var(--bleu-clair); border-color: var(--bleu-clair); }
+  .btn-express { background: var(--orange-express); border-color: var(--orange-express); color: #fff; }
+  .btn-express:hover { background: var(--orange-express-fonce); border-color: var(--orange-express-fonce); }
+  .btn-express-hero { background: var(--orange-express); border-color: var(--orange-express); color: #fff; gap: 6px; }
+  .btn-express-hero:hover { background: var(--orange-express-fonce); border-color: var(--orange-express-fonce); }
+  .btn-badge { font-size: 8pt; font-weight: 600; background: rgba(255,255,255,.25);
+    padding: 1px 6px; border-radius: 10px; letter-spacing: .02em; }
 
   /* ===== Nav ===== */
   nav { display: flex; align-items: center; justify-content: space-between; padding: 5mm 0; }
@@ -161,6 +170,43 @@ $estConnecte = !empty($_SESSION['utilisateur_id']);
   .reveal-groupe .reveal:nth-child(2) { transition-delay: .1s; }
   .reveal-groupe .reveal:nth-child(3) { transition-delay: .2s; }
 
+  /* ===== Section deux voies ===== */
+  .deux-voies { display: grid; gap: 16px; margin-top: 40px; }
+  @media (min-width: 640px) { .deux-voies { grid-template-columns: 1fr 1fr; } }
+
+  .voie-carte {
+    border-radius: 14px; padding: 28px 24px; position: relative; overflow: hidden;
+    display: flex; flex-direction: column; gap: 12px;
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .voie-carte:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(11,31,61,.12); }
+
+  .voie-carte.express {
+    background: #FFF8EC; border: 2px solid #D97706;
+  }
+  .voie-carte.complet {
+    background: var(--bleu-clair); border: 2px solid var(--bleu);
+  }
+
+  .voie-icone { font-size: 22pt; }
+  .voie-titre { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 14pt; color: var(--bleu-marine); }
+  .voie-desc { font-size: 10pt; color: var(--gris-texte); line-height: 1.5; flex-grow: 1; }
+
+  .voie-puces { list-style: none; font-size: 9.5pt; display: flex; flex-direction: column; gap: 5px; }
+  .voie-puces li { display: flex; gap: 6px; align-items: flex-start; color: var(--gris-texte); }
+  .voie-puces li::before { flex-shrink: 0; margin-top: 1px; }
+  .voie-carte.express .voie-puces li::before { content: "⚡"; }
+  .voie-carte.complet .voie-puces li::before { content: "✓"; color: var(--bleu); font-weight: 800; }
+
+  .voie-btn { display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 10pt; padding: 10px 18px; border-radius: 8px;
+    text-decoration: none; margin-top: 4px; transition: background .15s; }
+  .voie-carte.express .voie-btn { background: #D97706; color: #fff; }
+  .voie-carte.express .voie-btn:hover { background: #B45A08; }
+  .voie-carte.complet .voie-btn { background: var(--bleu); color: #fff; }
+  .voie-carte.complet .voie-btn:hover { background: #1251CC; }
+
+  /* ===== Respect de la préférence de réduction des animations ===== */
   /* Respect de la préférence de réduction des animations */
   @media (prefers-reduced-motion: reduce) {
     * { transition-duration: .001ms !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; }
@@ -194,6 +240,9 @@ $estConnecte = !empty($_SESSION['utilisateur_id']);
       <?php else: ?>
         <a href="connexion.php" class="btn btn-sm btn-outline">Se connecter</a>
       <?php endif; ?>
+      <?php if ($estOperateur): ?>
+        <a href="express-cv.php" class="btn btn-sm btn-express">⚡ CV Express</a>
+      <?php endif; ?>
       <a href="creer-cv.php" class="btn btn-sm btn-orange">Créer mon CV</a>
     </div>
   </nav>
@@ -202,16 +251,55 @@ $estConnecte = !empty($_SESSION['utilisateur_id']);
 <section class="hero">
   <div class="enveloppe hero-grille">
     <div class="reveal">
-      <h1>Créez votre CV professionnel, <span class="accent">facilement</span></h1>
-      <p class="lead">Même sans expérience ou diplôme, valorisez vos compétences et trouvez des opportunités. Remplissez, vérifiez l'aperçu, téléchargez en PDF en quelques minutes, depuis votre téléphone.</p>
+      <h1>Un CV professionnel,<br><span class="accent">en quelques minutes</span></h1>
+      <p class="lead">Deux voies selon votre situation : un parcours express en cybercafé, ou un formulaire complet à remplir à votre rythme. Dans les deux cas, votre CV est prêt en moins de 5 minutes.</p>
       <div class="hero-boutons">
-        <a href="creer-cv.php" class="btn btn-orange">Créer mon CV gratuitement</a>
-        <a href="#comment-ca-marche" class="btn btn-outline">Voir comment ça marche</a>
+        <a href="express-cv.php" class="btn btn-express-hero">⚡ CV Express <span class="btn-badge">Cybercafé</span></a>
+        <a href="creer-cv.php" class="btn btn-orange">CV complet →</a>
       </div>
+      <p class="hero-reassurance">Gratuit · Sans engagement · Depuis votre téléphone</p>
      </div>
     <div class="hero-illu reveal">
       <!-- Dépose ton illustration téléchargée ici : illustrations/hero.svg -->
       <img src="illustrations/hero.svg" alt="Illustration : création de CV en ligne" width="500" height="500" decoding="async">
+    </div>
+  </div>
+</section>
+
+<section class="section" id="deux-voies">
+  <div class="enveloppe">
+    <div class="section-titre reveal">
+      <h2>Choisissez votre voie</h2>
+      <p>Express en cybercafé, ou complet depuis chez vous — même résultat professionnel.</p>
+    </div>
+    <div class="deux-voies reveal">
+
+      <div class="voie-carte express">
+        <div class="voie-icone">⚡</div>
+        <div class="voie-titre">CV Express</div>
+        <p class="voie-desc">Idéal en cybercafé. L'opérateur scanne votre CIN, choisit votre métier et votre rayon de déplacement. En moins de 2 minutes, votre profil est en ligne avec un QR code à partager.</p>
+        <ul class="voie-puces">
+          <li>Scan de carte d'identité automatique</li>
+          <li>Métier parmi une liste de 83 métiers</li>
+          <li>Profil public accessible via QR code</li>
+          <li>Aucune saisie fastidieuse</li>
+        </ul>
+        <a href="express-cv.php" class="voie-btn">⚡ Démarrer le CV Express</a>
+      </div>
+
+      <div class="voie-carte complet">
+        <div class="voie-icone">📄</div>
+        <div class="voie-titre">CV Complet</div>
+        <p class="voie-desc">Remplissez votre CV étape par étape, à votre rythme, depuis votre téléphone ou ordinateur. Expériences, formations, compétences, langues — tout y est. Export PDF haute qualité.</p>
+        <ul class="voie-puces">
+          <li>Formulaire guidé en 8 étapes</li>
+          <li>Expériences et formations détaillées</li>
+          <li>Aperçu fidèle avant téléchargement</li>
+          <li>PDF prêt à imprimer ou envoyer</li>
+        </ul>
+        <a href="creer-cv.php" class="voie-btn">Créer mon CV complet</a>
+      </div>
+
     </div>
   </div>
 </section>
@@ -288,8 +376,11 @@ $estConnecte = !empty($_SESSION['utilisateur_id']);
   <div class="enveloppe">
     <div class="cta-bandeau reveal">
       <h2>Prêt à créer votre CV ?</h2>
-      <p>Gratuit, sans engagement, en quelques minutes.</p>
-      <a href="creer-cv.php" class="btn btn-blanc">Créer mon CV gratuitement</a>
+      <p>Gratuit, sans engagement, en moins de 5 minutes.</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <a href="express-cv.php" class="btn" style="background:#D97706;border-color:#D97706;color:#fff;">⚡ CV Express</a>
+        <a href="creer-cv.php" class="btn btn-blanc">CV complet</a>
+      </div>
     </div>
   </div>
 </section>
