@@ -59,41 +59,19 @@ $estOperateur = !empty($_SESSION['est_operateur']);
   /* Taille compacte (boutons intégrés à une ligne dense : nav) */
   .btn-sm { padding: 2.2mm 4.5mm; font-size: 9.5pt; border-radius: 1.6mm; }
 
+  --orange-express: #D97706; --orange-express-fonce: #B45A08;
+
   .btn-orange { background: var(--orange); border-color: var(--orange); color: #0B1F3D; }
   .btn-orange:hover { background: var(--orange-fonce); border-color: var(--orange-fonce); }
   .btn-outline { background: none; color: var(--bleu); border-color: var(--bleu); }
   .btn-outline:hover { background: var(--bleu-clair); }
   .btn-blanc { background: #fff; border-color: #fff; color: var(--bleu); }
   .btn-blanc:hover { background: var(--bleu-clair); border-color: var(--bleu-clair); }
-  /* Variante pour l'action secondaire sur fond coloré (bandeau bleu) : un
-     bouton plein blanc à côté d'un contour blanc, jamais deux pleins. */
-  .btn-contour-blanc { background: none; border-color: rgba(255,255,255,.7); color: #fff; }
-  .btn-contour-blanc:hover { background: rgba(255,255,255,.12); border-color: #fff; }
-  /* CV Express réutilise l'orange du site plutôt qu'une seconde teinte
-     concurrente : deux oranges qui se répondent sur la même page ne se
-     distinguent pas, ils se font concurrence. */
-  .btn-express { background: var(--orange); border-color: var(--orange); color: #0B1F3D; }
-  .btn-express:hover { background: var(--orange-fonce); border-color: var(--orange-fonce); }
-  /* Dans le hero, l'Express reste secondaire (contour) : la plupart des
-     visiteurs ne sont pas opérateurs et ne peuvent pas l'utiliser sans
-     compte dédié — le CTA plein doit rester le CV complet, accessible
-     à tout le monde sans condition. */
-  /* Contour neutre, pas orange : l'orange ne doit apparaître qu'une seule
-     fois dans le hero (le bouton principal), sinon il cesse d'être un
-     accent et devient juste "la couleur de la page". */
-  .btn-express-hero { background: none; color: var(--texte); border-color: #E4E7EB; }
-  .btn-express-hero:hover { background: var(--gris-fond); border-color: #CBD2DC; }
-
-  /* Lien discret pour l'opérateur dans la nav : un badge, pas un second
-     bouton plein qui concurrencerait "Créer mon CV". */
-  .nav-tag-express {
-    display: inline-flex; align-items: center; gap: 1.2mm;
-    font-size: 9pt; font-weight: 600; color: var(--gris-texte);
-    border: 1px solid #E4E7EB; border-radius: 20px; padding: 1.3mm 3mm;
-    transition: border-color .15s, color .15s;
-  }
-  .nav-tag-express:hover { border-color: var(--bleu); color: var(--bleu); }
-  .btn-badge { font-size: 8pt; font-weight: 600; background: rgba(11,31,61,.08);
+  .btn-express { background: var(--orange-express); border-color: var(--orange-express); color: #fff; }
+  .btn-express:hover { background: var(--orange-express-fonce); border-color: var(--orange-express-fonce); }
+  .btn-express-hero { background: var(--orange-express); border-color: var(--orange-express); color: #fff; gap: 6px; }
+  .btn-express-hero:hover { background: var(--orange-express-fonce); border-color: var(--orange-express-fonce); }
+  .btn-badge { font-size: 8pt; font-weight: 600; background: rgba(255,255,255,.25);
     padding: 1px 6px; border-radius: 10px; letter-spacing: .02em; }
 
   /* ===== Nav ===== */
@@ -115,10 +93,7 @@ $estOperateur = !empty($_SESSION['est_operateur']);
      inchangé), mais se réduit en dessous au lieu de rester figé et de forcer
      des coupures de mots sur mobile. */
   .hero h1 { font-size: clamp(24px, 7vw, 28pt); font-weight: 800; letter-spacing: -.3pt; }
-  /* Bleu, pas orange : l'orange est déjà pris par le bouton principal
-     juste en dessous, deux touches de la même couleur dans le même
-     écran ne se renforcent pas, elles diluent l'accent. */
-  .hero h1 .accent { color: var(--bleu); }
+  .hero h1 .accent { color: var(--orange); }
   .hero p.lead { font-size: 12pt; color: var(--gris-texte); margin: 5mm 0 7mm; max-width: 46ch; }
   /* .btn est en white-space:nowrap : les deux boutons du héro totalisent ~480px
      incompressibles. Sans flex-wrap ils débordaient de l'écran sous 530px de
@@ -195,43 +170,41 @@ $estOperateur = !empty($_SESSION['est_operateur']);
   .reveal-groupe .reveal:nth-child(2) { transition-delay: .1s; }
   .reveal-groupe .reveal:nth-child(3) { transition-delay: .2s; }
 
-  /* ===== Section deux voies =====
-     Une carte neutre (fond blanc, bordure fine) plutôt que deux aplats de
-     couleur qui se répondent en miroir : la couleur ne sert qu'à la puce
-     d'icône et au bouton, pas à noyer toute la carte. */
-  .deux-voies { display: grid; gap: 6mm; margin-top: 8mm; }
-  @media (min-width: 640px) { .deux-voies { grid-template-columns: 1fr 1fr; gap: 7mm; } }
+  /* ===== Section deux voies ===== */
+  .deux-voies { display: grid; gap: 16px; margin-top: 40px; }
+  @media (min-width: 640px) { .deux-voies { grid-template-columns: 1fr 1fr; } }
 
   .voie-carte {
-    background: #fff; border: 1px solid #E4E7EB; border-radius: 5mm;
-    padding: 8mm 7mm; display: flex; flex-direction: column; gap: 4mm;
-    transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+    border-radius: 14px; padding: 28px 24px; position: relative; overflow: hidden;
+    display: flex; flex-direction: column; gap: 12px;
+    transition: transform .15s ease, box-shadow .15s ease;
   }
-  .voie-carte:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(11,31,61,.09); border-color: transparent; }
+  .voie-carte:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(11,31,61,.12); }
 
-  .voie-tete { display: flex; align-items: center; gap: 3.5mm; }
-  .voie-icone {
-    width: 11mm; height: 11mm; border-radius: 3mm; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
+  .voie-carte.express {
+    background: #FFF8EC; border: 2px solid #D97706;
   }
-  .voie-icone svg { width: 5.5mm; height: 5.5mm; }
-  .voie-carte.express .voie-icone { background: #FFF3E2; color: var(--orange-fonce); }
-  .voie-carte.complet .voie-icone { background: var(--bleu-clair); color: var(--bleu); }
+  .voie-carte.complet {
+    background: var(--bleu-clair); border: 2px solid var(--bleu);
+  }
 
-  .voie-titre { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 13.5pt; color: var(--bleu-marine); }
-  .voie-tag { font-size: 8.5pt; color: var(--gris-texte); }
+  .voie-icone { font-size: 22pt; }
+  .voie-titre { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 14pt; color: var(--bleu-marine); }
+  .voie-desc { font-size: 10pt; color: var(--gris-texte); line-height: 1.5; flex-grow: 1; }
 
-  .voie-desc { font-size: 10pt; color: var(--gris-texte); line-height: 1.55; }
+  .voie-puces { list-style: none; font-size: 9.5pt; display: flex; flex-direction: column; gap: 5px; }
+  .voie-puces li { display: flex; gap: 6px; align-items: flex-start; color: var(--gris-texte); }
+  .voie-puces li::before { flex-shrink: 0; margin-top: 1px; }
+  .voie-carte.express .voie-puces li::before { content: "⚡"; }
+  .voie-carte.complet .voie-puces li::before { content: "✓"; color: var(--bleu); font-weight: 800; }
 
-  .voie-puces { list-style: none; font-size: 9.5pt; display: flex; flex-direction: column; gap: 2mm; }
-  .voie-puces li { display: flex; gap: 2.5mm; align-items: flex-start; color: var(--texte); }
-  .voie-puces li::before { content: "✓"; flex-shrink: 0; font-weight: 800; }
-  .voie-carte.express .voie-puces li::before { color: var(--orange-fonce); }
-  .voie-carte.complet .voie-puces li::before { color: var(--bleu); }
-
-  .voie-carte .btn { margin-top: 2mm; width: 100%; }
-  .btn-bleu { background: var(--bleu); border-color: var(--bleu); color: #fff; }
-  .btn-bleu:hover { background: #1251CC; border-color: #1251CC; }
+  .voie-btn { display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 10pt; padding: 10px 18px; border-radius: 8px;
+    text-decoration: none; margin-top: 4px; transition: background .15s; }
+  .voie-carte.express .voie-btn { background: #D97706; color: #fff; }
+  .voie-carte.express .voie-btn:hover { background: #B45A08; }
+  .voie-carte.complet .voie-btn { background: var(--bleu); color: #fff; }
+  .voie-carte.complet .voie-btn:hover { background: #1251CC; }
 
   /* ===== Respect de la préférence de réduction des animations ===== */
   /* Respect de la préférence de réduction des animations */
@@ -268,7 +241,7 @@ $estOperateur = !empty($_SESSION['est_operateur']);
         <a href="connexion.php" class="btn btn-sm btn-outline">Se connecter</a>
       <?php endif; ?>
       <?php if ($estOperateur): ?>
-        <a href="express-cv.php" class="nav-tag-express">⚡ CV Express</a>
+        <a href="express-cv.php" class="btn btn-sm btn-express">⚡ CV Express</a>
       <?php endif; ?>
       <a href="creer-cv.php" class="btn btn-sm btn-orange">Créer mon CV</a>
     </div>
@@ -281,8 +254,8 @@ $estOperateur = !empty($_SESSION['est_operateur']);
       <h1>Un CV professionnel,<br><span class="accent">en quelques minutes</span></h1>
       <p class="lead">Deux voies selon votre situation : un parcours express en cybercafé, ou un formulaire complet à remplir à votre rythme. Dans les deux cas, votre CV est prêt en moins de 5 minutes.</p>
       <div class="hero-boutons">
-        <a href="creer-cv.php" class="btn btn-orange">Créer mon CV gratuitement</a>
-        <a href="express-cv.php" class="btn btn-express-hero">⚡ Voie Express <span class="btn-badge">Cybercafé</span></a>
+        <a href="express-cv.php" class="btn btn-express-hero">⚡ CV Express <span class="btn-badge">Cybercafé</span></a>
+        <a href="creer-cv.php" class="btn btn-orange">CV complet →</a>
       </div>
       <p class="hero-reassurance">Gratuit · Sans engagement · Depuis votre téléphone</p>
      </div>
@@ -302,49 +275,29 @@ $estOperateur = !empty($_SESSION['est_operateur']);
     <div class="deux-voies reveal">
 
       <div class="voie-carte express">
-        <div class="voie-tete">
-          <div class="voie-icone">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/>
-            </svg>
-          </div>
-          <div>
-            <div class="voie-titre">CV Express</div>
-            <div class="voie-tag">En cybercafé, avec un opérateur</div>
-          </div>
-        </div>
-        <p class="voie-desc">L'opérateur scanne votre carte d'identité, choisit votre métier et votre rayon de déplacement. En moins de 2 minutes, votre profil est en ligne avec un QR code à partager.</p>
+        <div class="voie-icone">⚡</div>
+        <div class="voie-titre">CV Express</div>
+        <p class="voie-desc">Idéal en cybercafé. L'opérateur scanne votre CIN, choisit votre métier et votre rayon de déplacement. En moins de 2 minutes, votre profil est en ligne avec un QR code à partager.</p>
         <ul class="voie-puces">
           <li>Scan de carte d'identité automatique</li>
-          <li>Métier choisi parmi 83 métiers</li>
-          <li>Profil public accessible par QR code</li>
+          <li>Métier parmi une liste de 83 métiers</li>
+          <li>Profil public accessible via QR code</li>
+          <li>Aucune saisie fastidieuse</li>
         </ul>
-        <a href="express-cv.php" class="btn btn-express">Démarrer le CV Express</a>
+        <a href="express-cv.php" class="voie-btn">⚡ Démarrer le CV Express</a>
       </div>
 
       <div class="voie-carte complet">
-        <div class="voie-tete">
-          <div class="voie-icone">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M8 2h6l4 4v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z"/>
-              <path d="M14 2v4h4"/>
-              <path d="M9 13h6M9 17h6"/>
-            </svg>
-          </div>
-          <div>
-            <div class="voie-titre">CV Complet</div>
-            <div class="voie-tag">Seul·e, à votre rythme</div>
-          </div>
-        </div>
-        <p class="voie-desc">Remplissez votre CV étape par étape, depuis votre téléphone ou ordinateur. Expériences, formations, compétences, langues — tout y est, avec un export PDF prêt à imprimer.</p>
+        <div class="voie-icone">📄</div>
+        <div class="voie-titre">CV Complet</div>
+        <p class="voie-desc">Remplissez votre CV étape par étape, à votre rythme, depuis votre téléphone ou ordinateur. Expériences, formations, compétences, langues — tout y est. Export PDF haute qualité.</p>
         <ul class="voie-puces">
           <li>Formulaire guidé en 8 étapes</li>
           <li>Expériences et formations détaillées</li>
           <li>Aperçu fidèle avant téléchargement</li>
+          <li>PDF prêt à imprimer ou envoyer</li>
         </ul>
-        <a href="creer-cv.php" class="btn btn-bleu">Créer mon CV complet</a>
+        <a href="creer-cv.php" class="voie-btn">Créer mon CV complet</a>
       </div>
 
     </div>
@@ -424,9 +377,9 @@ $estOperateur = !empty($_SESSION['est_operateur']);
     <div class="cta-bandeau reveal">
       <h2>Prêt à créer votre CV ?</h2>
       <p>Gratuit, sans engagement, en moins de 5 minutes.</p>
-      <div class="hero-boutons" style="justify-content:center;">
-        <a href="creer-cv.php" class="btn btn-blanc">Créer mon CV complet</a>
-        <a href="express-cv.php" class="btn btn-contour-blanc">⚡ Voie Express</a>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <a href="express-cv.php" class="btn" style="background:#D97706;border-color:#D97706;color:#fff;">⚡ CV Express</a>
+        <a href="creer-cv.php" class="btn btn-blanc">CV complet</a>
       </div>
     </div>
   </div>
