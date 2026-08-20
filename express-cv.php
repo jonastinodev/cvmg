@@ -16,8 +16,194 @@ $metiersJson  = file_get_contents(__DIR__ . '/metiers.json') ?: '[]';
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#D97706">
 <style>
-  /* Styles minimaux pour que la navigation fonctionne avant la tâche #12 */
-  .ecran-cache { display: none; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --orange:       #D97706;
+    --orange-fonce: #B45A08;
+    --orange-clair: #FFF8EC;
+    --bleu-marine:  #0B1F3D;
+    --texte:        #1A2035;
+    --gris:         #5B6472;
+    --fond:         #F6F7F9;
+    --blanc:        #fff;
+    --bordure:      #E4E7EB;
+  }
+
+  html, body { height: 100%; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--fond);
+    color: var(--texte);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+  a { color: inherit; text-decoration: none; }
+  .ecran-cache { display: none !important; }
+
+  /* ── EN-TÊTE ────────────────────────────────────────── */
+  #entete {
+    background: var(--blanc);
+    border-bottom: 1px solid var(--bordure);
+    position: sticky; top: 0; z-index: 10;
+  }
+  #entete-interieur {
+    max-width: 560px; margin: 0 auto; padding: 12px 20px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  #entete-logo { display: flex; align-items: center; gap: 10px; }
+  #logo {
+    font-family: system-ui, sans-serif; font-weight: 800; font-size: 17pt;
+    color: var(--bleu-marine); letter-spacing: -0.5px;
+  }
+  #logo span { color: var(--orange); }
+  #badge-ops {
+    font-size: 9pt; font-weight: 700; background: var(--orange);
+    color: #fff; padding: 3px 9px; border-radius: 4px; letter-spacing: .03em;
+  }
+  #etape-label {
+    font-size: 10pt; font-weight: 600; color: var(--gris);
+    white-space: nowrap;
+  }
+  #barre-progression { height: 4px; background: var(--bordure); }
+  #barre-remplissage {
+    height: 100%; background: var(--orange);
+    transition: width .35s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* ── CONTENEUR ──────────────────────────────────────── */
+  #conteneur {
+    max-width: 560px; margin: 0 auto;
+    padding: 28px 20px 100px;
+  }
+
+  /* ── ÉCRANS ─────────────────────────────────────────── */
+  .titre-ecran {
+    font-size: 19pt; font-weight: 700; color: var(--bleu-marine);
+    line-height: 1.25; margin-bottom: 6px;
+    text-wrap: balance;
+  }
+  .sous-titre { font-size: 10.5pt; color: var(--gris); margin-bottom: 24px; }
+
+  /* ── CHAMPS ÉCRAN 1 ─────────────────────────────────── */
+  .champ-groupe { margin-top: 18px; }
+  .champ-groupe label {
+    display: block; font-size: 10pt; font-weight: 600;
+    color: var(--gris); margin-bottom: 6px; letter-spacing: .03em;
+  }
+  .requis    { color: var(--orange); }
+  .facultatif { color: #9CA3AF; font-weight: 400; }
+
+  .champ-groupe input[type=text] {
+    width: 100%; padding: 14px 16px;
+    border: 1.5px solid var(--bordure); border-radius: 10px;
+    font-size: 15pt; font-family: inherit; color: var(--texte);
+    background: var(--blanc);
+    transition: border-color .15s;
+  }
+  .champ-groupe input[type=text]:focus {
+    outline: none; border-color: var(--orange);
+    box-shadow: 0 0 0 3px rgba(217,119,6,.15);
+  }
+
+  /* ── GRILLE MÉTIERS ─────────────────────────────────── */
+  #grille-metiers {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    margin-bottom: 16px;
+  }
+  .btn-metier {
+    padding: 10px 16px; border: 1.5px solid var(--bordure);
+    border-radius: 8px; background: var(--blanc);
+    font-size: 11pt; font-family: inherit; color: var(--texte);
+    cursor: pointer; transition: border-color .12s, background .12s;
+  }
+  .btn-metier:hover  { border-color: var(--orange); background: var(--orange-clair); }
+  .btn-metier.actif  {
+    border-color: var(--orange); background: var(--orange);
+    color: #fff; font-weight: 600;
+  }
+  #metier-selectionne-label {
+    font-size: 10.5pt; font-weight: 600; color: var(--orange);
+    min-height: 22px;
+  }
+
+  /* ── GRILLE RAYON ───────────────────────────────────── */
+  #grille-rayon {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 12px; margin-top: 8px;
+  }
+  .btn-rayon {
+    padding: 20px 10px; border: 2px solid var(--bordure);
+    border-radius: 12px; background: var(--blanc);
+    font-size: 14pt; font-weight: 700; font-family: inherit;
+    color: var(--texte); cursor: pointer;
+    transition: border-color .12s, background .12s, color .12s;
+    text-align: center;
+  }
+  .btn-rayon:hover { border-color: var(--orange); background: var(--orange-clair); }
+  .btn-rayon.actif {
+    border-color: var(--orange); background: var(--orange);
+    color: #fff;
+  }
+
+  /* ── RÉSUMÉ ─────────────────────────────────────────── */
+  #resume {
+    background: var(--blanc); border: 1px solid var(--bordure);
+    border-radius: 12px; padding: 4px 0; margin-bottom: 24px;
+  }
+  .resume-ligne {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 12px; padding: 14px 18px;
+    border-bottom: 1px solid var(--bordure);
+  }
+  .resume-ligne:last-child { border-bottom: none; }
+  .resume-cle  { font-size: 10pt; color: var(--gris); font-weight: 500; flex-shrink: 0; }
+  .resume-val  { font-size: 12pt; font-weight: 600; color: var(--texte); text-align: right; }
+
+  #btn-publier {
+    width: 100%; padding: 18px;
+    background: var(--orange); color: #fff;
+    font-size: 13pt; font-weight: 700; font-family: inherit;
+    border: none; border-radius: 12px; cursor: pointer;
+    transition: background .15s;
+  }
+  #btn-publier:hover   { background: var(--orange-fonce); }
+  #btn-publier:disabled { opacity: .55; cursor: default; }
+
+  #statut-publication {
+    margin-top: 12px; text-align: center;
+    font-size: 10.5pt; color: var(--gris); min-height: 20px;
+  }
+
+  /* ── NAVIGATION ─────────────────────────────────────── */
+  #navigation {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--blanc); border-top: 1px solid var(--bordure);
+    padding: 14px 20px;
+    display: flex; justify-content: space-between; gap: 12px;
+    max-width: 560px; margin: 0 auto;
+    /* centrer la barre fixe sur la même largeur que le conteneur */
+    left: 50%; transform: translateX(-50%);
+    width: 100%;
+  }
+  #btn-precedent, #btn-suivant {
+    flex: 1; padding: 15px;
+    border: 2px solid var(--bordure); border-radius: 10px;
+    font-size: 11.5pt; font-weight: 600; font-family: inherit;
+    cursor: pointer; background: var(--blanc); color: var(--texte);
+    transition: border-color .12s, background .12s;
+  }
+  #btn-precedent:hover { border-color: var(--gris); }
+  #btn-suivant {
+    background: var(--orange); border-color: var(--orange); color: #fff;
+  }
+  #btn-suivant:hover { background: var(--orange-fonce); border-color: var(--orange-fonce); }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .ecran { animation: glisser .22s ease; }
+    @keyframes glisser { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  }
 </style>
 </head>
 <body>
