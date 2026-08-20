@@ -3,7 +3,8 @@ require_once __DIR__ . '/session.php';
 $estConnecte = !empty($_SESSION['utilisateur_id']);
 $nomUtilisateur = $estConnecte ? $_SESSION['utilisateur_nom'] : null;
 $cvIdCharge = isset($_GET['cv_id']) ? (int)$_GET['cv_id'] : null;
-$metiersJson = file_get_contents(__DIR__ . '/metiers.json') ?: '[]';
+$metiersJson    = file_get_contents(__DIR__ . '/metiers.json') ?: '[]';
+$estOperateur   = !empty($_SESSION['est_operateur']);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -302,6 +303,15 @@ $metiersJson = file_get_contents(__DIR__ . '/metiers.json') ?: '[]';
   .cin-btn-large { width: 100%; padding: 16px; margin-top: 8px; }
   .cin-statut { text-align: center; font-size: 13px; padding: 10px 0; color: var(--cin-sur-surface-variante); }
 
+  /* ── BOUTON EXPRESS (opérateurs) ───────────────────── */
+  .btn-express {
+    display: inline-flex; align-items: center; gap: 1mm;
+    background: #D97706; color: #fff; text-decoration: none;
+    padding: 2mm 3.5mm; border-radius: 2mm;
+    font-size: 9pt; font-weight: 600; white-space: nowrap;
+  }
+  .btn-express:hover { background: #B45A08; }
+
   /* ── AUTOCOMPLETE MÉTIER ───────────────────────────── */
   .autocomplete-wrap { position: relative; }
   .autocomplete-liste {
@@ -330,6 +340,9 @@ $metiersJson = file_get_contents(__DIR__ . '/metiers.json') ?: '[]';
     <?php if ($estConnecte): ?>
       <div class="compte">
         <span class="compte-pastille"><?= htmlspecialchars(mb_strtoupper(mb_substr($nomUtilisateur, 0, 1))) ?></span>
+        <?php if ($estOperateur): ?>
+          <a href="express-cv.php" class="btn-express">⚡ CV Express</a>
+        <?php endif; ?>
         <a href="mes-cv.php" class="compte-lien">Mes CV</a>
         <a href="deconnexion.php" class="compte-lien discret">Se déconnecter</a>
       </div>
