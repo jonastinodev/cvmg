@@ -384,6 +384,17 @@ $estOperateur   = !empty($_SESSION['est_operateur']);
                  placeholder="Ex : Réparateur de panneaux solaires">
         </div>
 
+        <label for="niveauExperience" style="margin-top:5mm">Niveau d'expérience dans ce métier</label>
+        <select id="niveauExperience">
+          <option value="">Non précisé</option>
+          <option value="debutant">Débutant(e) — premier emploi, pas encore d'expérience</option>
+          <option value="quelques-experiences">Quelques expériences dans ce domaine</option>
+          <option value="experimente">Expérimenté(e) dans ce métier</option>
+        </select>
+        <p class="sous-titre" style="margin-top:1mm">
+          Sert uniquement à guider la rédaction assistée ci-dessous : n'apparaît pas sur le CV.
+        </p>
+
         <label for="profilCourt" style="margin-top:5mm">Courte description <span class="facultatif">(facultatif)</span></label>
         <div class="zona-ia">
           <textarea id="profilCourt" placeholder="Ex : Personne sérieuse, motivée et ponctuelle, à la recherche d'un emploi dans la vente."></textarea>
@@ -655,6 +666,10 @@ let cv = {
   modele: 'classique',
   personnel: { nom:'', prenom:'', titrePro:'', profilCourt:'', telephone:'', email:'', ville:'', adresse:'', dateNaissance:'', permis:'', photo:'' },
   sansExperience: false,
+  // Indice de niveau pour la rédaction IA uniquement ('', 'debutant',
+  // 'quelques-experiences', 'experimente') : ne fait pas partie du contrat
+  // de données du CV, n'est jamais envoyé à construireDonneesCV().
+  niveauExperience: '',
   experiences: [],
   formations: [],
   competences: [],
@@ -761,6 +776,7 @@ document.getElementById('nom').addEventListener('input', () => majApercuPhoto())
 document.getElementById('prenom').addEventListener('input', () => majApercuPhoto());
 // titrePro n'est pas lié par lierChamp : c'est un <select> doublé d'un
 // champ libre, géré par initSelectTitrePro() plus bas.
+lierChamp('niveauExperience', 'niveauExperience', cv);
 lierChamp('profilCourt', 'profilCourt', cv.personnel);
 
 // ── Métier : liste déroulante + saisie libre en repli ──────────
@@ -870,6 +886,7 @@ document.getElementById('btnIaProfil').addEventListener('click', (e) => genererT
     titrePro: cv.personnel.titrePro,
     ville: cv.personnel.ville,
     sansExperience: cv.sansExperience,
+    niveauExperience: cv.niveauExperience,
     experiences: cv.experiences.map(x => [x.poste, x.employeur].filter(Boolean).join(' chez ')).filter(Boolean),
     competences: cv.competences,
     qualites: cv.qualites,
@@ -1159,6 +1176,15 @@ caseSansExperience.addEventListener('change', () => {
   document.getElementById('messageSansExperience').classList.toggle('hidden', !cv.sansExperience);
   document.getElementById('listeExperiences').classList.toggle('hidden', cv.sansExperience);
   document.getElementById('btnAjouterExperience').classList.toggle('hidden', cv.sansExperience);
+  // Cette case est cochée à l'étape 5, après l'étape 2 où se trouve le
+  // bouton de rédaction IA : sans ce rattrapage, quelqu'un qui coche
+  // « pas d'expérience » ici puis revient générer l'accroche se retrouve
+  // avec un niveau resté à "Non précisé". On ne force que si l'utilisateur
+  // n'a pas déjà choisi un niveau lui-même.
+  if (cv.sansExperience && !cv.niveauExperience) {
+    cv.niveauExperience = 'debutant';
+    document.getElementById('niveauExperience').value = 'debutant';
+  }
   sauvegarderLocalement(); mettreAJourApercu();
 });
 

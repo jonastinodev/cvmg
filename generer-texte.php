@@ -48,7 +48,7 @@ if (!in_array($type, ['profil', 'mission'], true)) {
 // Seules ces clés sont lues, et chacune est tronquée : le contexte transmis à
 // l'IA reste court, ce qui empêche de détourner l'endpoint via un champ long.
 $clesAutorisees = [
-    'profil'  => ['titrePro', 'ville', 'experiences', 'competences', 'qualites', 'sansExperience'],
+    'profil'  => ['titrePro', 'ville', 'experiences', 'competences', 'qualites', 'sansExperience', 'niveauExperience'],
     'mission' => ['poste', 'employeur', 'lieu', 'debut', 'fin', 'actuel'],
 ];
 
@@ -80,22 +80,50 @@ TXT;
 
 if ($type === 'profil') {
     $sansExp = !empty($ctx['sansExperience']);
+    $niveau  = $ctx['niveauExperience'] ?? '';
+
+    // Libellés du sélecteur "Niveau d'expérience" du formulaire : c'est le
+    // signal le plus fiable, choisi explicitement par l'utilisateur (ou
+    // l'opérateur cybercafé), contrairement à sansExperience qui n'est
+    // renseigné qu'à une étape ultérieure du formulaire.
+    $labelsNiveau = [
+        'debutant'              => "débutant(e), premier emploi",
+        'quelques-experiences'  => "quelques expériences dans ce domaine, sans être expert",
+        'experimente'           => "expérimenté(e) dans ce métier",
+    ];
+
     $lignes = [];
     if (!empty($ctx['titrePro']))    $lignes[] = "Poste recherché : {$ctx['titrePro']}";
     if (!empty($ctx['ville']))       $lignes[] = "Ville : {$ctx['ville']}";
     if (!empty($ctx['experiences'])) $lignes[] = "Expériences : {$ctx['experiences']}";
     if (!empty($ctx['competences'])) $lignes[] = "Compétences : {$ctx['competences']}";
     if (!empty($ctx['qualites']))    $lignes[] = "Qualités : {$ctx['qualites']}";
-    if ($sansExp)                    $lignes[] = "Cette personne n'a pas encore d'expérience professionnelle.";
+    if (isset($labelsNiveau[$niveau])) {
+        $lignes[] = "Niveau d'expérience déclaré par la personne : {$labelsNiveau[$niveau]}";
+    } elseif ($sansExp) {
+        $lignes[] = "Cette personne n'a pas encore d'expérience professionnelle.";
+    }
 
     if (count($lignes) === 0) {
         repondreErreur("Renseignez au moins le métier recherché avant de générer la description.");
     }
 
     $infos = implode("\n", $lignes);
-    $angle = $sansExp
-        ? "La personne débute : mets en avant la motivation, le sérieux et les qualités personnelles, sans jamais laisser croire qu'elle a de l'expérience."
-        : "Appuie-toi sur les expériences et compétences réellement listées.";
+
+    // Le niveau explicite prime sur sansExperience : un utilisateur qui a
+    // coché "débutant" doit obtenir un texte modeste même s'il a par
+    // ailleurs déjà saisi une expérience (petit boulot, stage...) qui ne
+    // reflète pas un vrai niveau de séniorité dans le métier visé.
+    $angle = match (true) {
+        $niveau === 'debutant' || (!$niveau && $sansExp) =>
+            "La personne débute dans ce métier : mets en avant la motivation, le sérieux et les qualités personnelles, sans jamais laisser croire qu'elle a de l'expérience professionnelle dans ce domaine. N'emploie aucun terme qui suggère de l'ancienneté ou une expertise.",
+        $niveau === 'quelques-experiences' =>
+            "La personne a quelques expériences dans ce domaine mais n'est pas une experte : reste mesuré, ne survends pas un niveau de séniorité ou de responsabilité qu'elle n'a pas.",
+        $niveau === 'experimente' =>
+            "La personne est expérimentée dans ce métier : tu peux valoriser pleinement son expérience et ses compétences, sans pour autant inventer de chiffres ou de responsabilités non mentionnés.",
+        default =>
+            "Appuie-toi strictement sur les expériences et compétences listées ci-dessus ; si elles sont peu nombreuses, n'exagère pas le niveau de la personne.",
+    };
 
     $prompt = <<<TXT
 Tu rédiges l'accroche d'un CV pour une personne à Madagascar, souvent peu diplômée, qui cherche un emploi.
