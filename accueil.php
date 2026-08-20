@@ -78,8 +78,21 @@ $estOperateur = !empty($_SESSION['est_operateur']);
      visiteurs ne sont pas opérateurs et ne peuvent pas l'utiliser sans
      compte dédié — le CTA plein doit rester le CV complet, accessible
      à tout le monde sans condition. */
-  .btn-express-hero { background: none; color: var(--orange-fonce); border-color: var(--orange); }
-  .btn-express-hero:hover { background: #FFF3E2; }
+  /* Contour neutre, pas orange : l'orange ne doit apparaître qu'une seule
+     fois dans le hero (le bouton principal), sinon il cesse d'être un
+     accent et devient juste "la couleur de la page". */
+  .btn-express-hero { background: none; color: var(--texte); border-color: #E4E7EB; }
+  .btn-express-hero:hover { background: var(--gris-fond); border-color: #CBD2DC; }
+
+  /* Lien discret pour l'opérateur dans la nav : un badge, pas un second
+     bouton plein qui concurrencerait "Créer mon CV". */
+  .nav-tag-express {
+    display: inline-flex; align-items: center; gap: 1.2mm;
+    font-size: 9pt; font-weight: 600; color: var(--gris-texte);
+    border: 1px solid #E4E7EB; border-radius: 20px; padding: 1.3mm 3mm;
+    transition: border-color .15s, color .15s;
+  }
+  .nav-tag-express:hover { border-color: var(--bleu); color: var(--bleu); }
   .btn-badge { font-size: 8pt; font-weight: 600; background: rgba(11,31,61,.08);
     padding: 1px 6px; border-radius: 10px; letter-spacing: .02em; }
 
@@ -102,7 +115,10 @@ $estOperateur = !empty($_SESSION['est_operateur']);
      inchangé), mais se réduit en dessous au lieu de rester figé et de forcer
      des coupures de mots sur mobile. */
   .hero h1 { font-size: clamp(24px, 7vw, 28pt); font-weight: 800; letter-spacing: -.3pt; }
-  .hero h1 .accent { color: var(--orange); }
+  /* Bleu, pas orange : l'orange est déjà pris par le bouton principal
+     juste en dessous, deux touches de la même couleur dans le même
+     écran ne se renforcent pas, elles diluent l'accent. */
+  .hero h1 .accent { color: var(--bleu); }
   .hero p.lead { font-size: 12pt; color: var(--gris-texte); margin: 5mm 0 7mm; max-width: 46ch; }
   /* .btn est en white-space:nowrap : les deux boutons du héro totalisent ~480px
      incompressibles. Sans flex-wrap ils débordaient de l'écran sous 530px de
@@ -252,7 +268,7 @@ $estOperateur = !empty($_SESSION['est_operateur']);
         <a href="connexion.php" class="btn btn-sm btn-outline">Se connecter</a>
       <?php endif; ?>
       <?php if ($estOperateur): ?>
-        <a href="express-cv.php" class="btn btn-sm btn-express">⚡ CV Express</a>
+        <a href="express-cv.php" class="nav-tag-express">⚡ CV Express</a>
       <?php endif; ?>
       <a href="creer-cv.php" class="btn btn-sm btn-orange">Créer mon CV</a>
     </div>
