@@ -184,8 +184,32 @@ $metiersJson  = file_get_contents(__DIR__ . '/metiers.json') ?: '[]';
 
   #statut-publication {
     margin-top: 12px; text-align: center;
-    font-size: 10.5pt; color: var(--gris); min-height: 20px;
+    font-size: 10.5pt; min-height: 20px;
   }
+  #statut-publication.erreur { color: #B00020; font-weight: 500; }
+
+  /* ── CARTE SUCCÈS (après publication) ──────────────── */
+  #carte-succes {
+    background: #ECFDF5; border: 1.5px solid #059669;
+    border-radius: 12px; padding: 24px 20px; text-align: center;
+    margin-bottom: 16px;
+  }
+  #carte-succes .succes-icone { font-size: 28pt; margin-bottom: 8px; }
+  #carte-succes h3 { font-size: 14pt; font-weight: 700; color: #065F46; margin-bottom: 10px; }
+  #carte-succes .lien-profil {
+    display: inline-block; background: #fff; border: 1.5px solid #059669;
+    border-radius: 8px; padding: 10px 18px; color: #059669;
+    font-weight: 600; font-size: 10.5pt; word-break: break-all; margin-bottom: 16px;
+  }
+  #carte-succes .lien-profil:hover { background: #D1FAE5; }
+  #zone-qrcode { margin: 16px 0; min-height: 40px; }
+  .btn-nouveau-express {
+    display: inline-block; padding: 13px 24px;
+    background: var(--orange); color: #fff;
+    font-weight: 700; font-size: 10.5pt; border-radius: 8px;
+    border: none; cursor: pointer; font-family: inherit;
+  }
+  .btn-nouveau-express:hover { background: var(--orange-fonce); }
 
   /* ── NAVIGATION ─────────────────────────────────────── */
   #navigation {
@@ -366,7 +390,9 @@ function afficherEcran(n) {
 
   document.getElementById('btn-precedent').classList.toggle('ecran-cache', n === 1);
   document.getElementById('btn-suivant').classList.toggle('ecran-cache', n === NB_ECRANS);
-  document.getElementById('btn-publier').closest ? null : null; // mis à jour en #16
+  // Cacher la barre de navigation après la publication réussie
+  const dejaPublie = document.getElementById('carte-succes');
+  document.getElementById('navigation').classList.toggle('ecran-cache', !!dejaPublie);
 
   if (n === NB_ECRANS) remplirResume();
 
@@ -447,6 +473,66 @@ document.querySelectorAll('.btn-rayon').forEach(btn => {
     express.rayon = parseInt(btn.dataset.km);
   });
 });
+
+// ── ÉCRAN 4 : PUBLICATION ──────────────────────────────────────
+async function soumettreExpress() {
+  const btn    = document.getElementById('btn-publier');
+  const statut = document.getElementById('statut-publication');
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Publication en cours…';
+  statut.textContent = '';
+  statut.className = '';
+
+  try {
+    const res  = await fetch('enregistrer-express.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nom:    express.nom,
+        prenom: express.prenom,
+        cin:    express.cin,
+        metier: express.metier,
+        rayon:  express.rayon,
+      }),
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok || (data && data.erreur)) throw new Error(data?.erreur || 'Erreur serveur');
+
+    // Succès : afficher la carte résultat, cacher le bouton et la nav
+    const urlPublique = data.url || ('profil-public.php?id=' + data.id);
+    const urlComplete = window.location.origin + '/ocr-cin/' + urlPublique;
+
+    btn.style.display = 'none';
+    document.getElementById('navigation').classList.add('ecran-cache');
+
+    document.getElementById('zone-resultat').innerHTML = `
+      <div id="carte-succes">
+        <div class="succes-icone">✅</div>
+        <h3>Profil publié !</h3>
+        <p style="font-size:10pt;color:#065F46;margin-bottom:12px;">
+          Partagez ce lien ou le QR code avec le client.
+        </p>
+        <a href="${urlComplete}" target="_blank" rel="noopener" class="lien-profil">${urlComplete}</a>
+        <div id="zone-qrcode"><!-- QR code injecté à la tâche #19 --></div>
+        <button type="button" class="btn-nouveau-express"
+          onclick="window.location.href='express-cv.php'">
+          ⚡ Créer un autre CV Express
+        </button>
+      </div>`;
+
+    // Déclencher l'affichage du QR code (tâche #19)
+    if (typeof afficherQrCode === 'function') afficherQrCode(urlComplete, data.id);
+
+  } catch (err) {
+    statut.textContent = 'Échec : ' + err.message;
+    statut.className = 'erreur';
+    btn.disabled = false;
+    btn.textContent = '⚡ Valider et publier';
+  }
+}
+
+document.getElementById('btn-publier').addEventListener('click', soumettreExpress);
 
 // ── ÉCRAN 4 : RÉSUMÉ ───────────────────────────────────────────
 function remplirResume() {
