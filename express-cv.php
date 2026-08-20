@@ -106,6 +106,17 @@ $metiersJson  = file_get_contents(__DIR__ . '/metiers.json') ?: '[]';
     box-shadow: 0 0 0 3px rgba(217,119,6,.15);
   }
 
+  /* ── FILTRE MÉTIER ──────────────────────────────────── */
+  #filtre-metier {
+    width: 100%; padding: 14px 16px; margin-bottom: 14px;
+    border: 1.5px solid var(--bordure); border-radius: 10px;
+    font-size: 13pt; font-family: inherit; color: var(--texte);
+    background: var(--blanc);
+    transition: border-color .15s;
+  }
+  #filtre-metier:focus { outline: none; border-color: var(--orange); box-shadow: 0 0 0 3px rgba(217,119,6,.15); }
+  #nb-resultats { font-size: 9.5pt; color: var(--gris); margin-bottom: 10px; min-height: 18px; }
+
   /* ── GRILLE MÉTIERS ─────────────────────────────────── */
   #grille-metiers {
     display: flex; flex-wrap: wrap; gap: 10px;
@@ -283,9 +294,14 @@ $metiersJson  = file_get_contents(__DIR__ . '/metiers.json') ?: '[]';
     <h2 class="titre-ecran">Quel est son métier ?</h2>
     <p class="sous-titre">Choisissez dans la liste. Ce métier sera affiché sur le profil.</p>
 
+    <input type="search" id="filtre-metier"
+           placeholder="Taper pour chercher : jardinier, gardien…"
+           autocomplete="off" autocorrect="off" spellcheck="false">
+
     <div id="grille-metiers">
       <!-- Boutons générés en JS depuis METIERS_CV -->
     </div>
+    <p id="nb-resultats"></p>
     <p id="metier-selectionne-label"></p>
   </section>
 
@@ -386,14 +402,19 @@ document.getElementById('btn-precedent').addEventListener('click', () => {
   if (ecranActuel > 1) afficherEcran(ecranActuel - 1);
 });
 
-// ── ÉCRAN 2 : GRILLE DE MÉTIERS ────────────────────────────────
+// ── ÉCRAN 2 : GRILLE DE MÉTIERS + FILTRE ──────────────────────
 (function construireGrilleMetiers() {
-  const grille = document.getElementById('grille-metiers');
+  const grille  = document.getElementById('grille-metiers');
+  const filtre  = document.getElementById('filtre-metier');
+  const nbLabel = document.getElementById('nb-resultats');
+
+  // Génération des boutons
   METIERS_CV.forEach(metier => {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'btn-metier';
     btn.textContent = metier;
+    btn.dataset.metier = normaliserTexte(metier);
     btn.addEventListener('click', () => {
       document.querySelectorAll('.btn-metier').forEach(b => b.classList.remove('actif'));
       btn.classList.add('actif');
@@ -401,6 +422,20 @@ document.getElementById('btn-precedent').addEventListener('click', () => {
       document.getElementById('metier-selectionne-label').textContent = '✓ ' + metier;
     });
     grille.appendChild(btn);
+  });
+
+  // Filtre en temps réel
+  filtre.addEventListener('input', () => {
+    const q = normaliserTexte(filtre.value.trim());
+    let visibles = 0;
+    document.querySelectorAll('.btn-metier').forEach(btn => {
+      const visible = !q || btn.dataset.metier.includes(q);
+      btn.style.display = visible ? '' : 'none';
+      if (visible) visibles++;
+    });
+    nbLabel.textContent = q
+      ? (visibles === 0 ? 'Aucun résultat — essayez un autre terme.' : `${visibles} métier${visibles > 1 ? 's' : ''}`)
+      : '';
   });
 })();
 
