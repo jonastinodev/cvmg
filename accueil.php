@@ -30,6 +30,7 @@ $estOperateur = !empty($_SESSION['est_operateur']);
   :root {
     --bleu: #1863F2; --bleu-marine: #0B1F3D; --bleu-clair: #EAF2FF;
     --orange: #F7941D; --orange-fonce: #DB7A00;
+    --orange-express: #D97706; --orange-express-fonce: #B45A08;
     --texte: #22262B; --gris-texte: #5B6472; --gris-fond: #F6F7F9;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -58,8 +59,6 @@ $estOperateur = !empty($_SESSION['est_operateur']);
   .btn { padding: 3.6mm 7mm; font-size: 10.5pt; }
   /* Taille compacte (boutons intégrés à une ligne dense : nav) */
   .btn-sm { padding: 2.2mm 4.5mm; font-size: 9.5pt; border-radius: 1.6mm; }
-
-  --orange-express: #D97706; --orange-express-fonce: #B45A08;
 
   .btn-orange { background: var(--orange); border-color: var(--orange); color: #0B1F3D; }
   .btn-orange:hover { background: var(--orange-fonce); border-color: var(--orange-fonce); }
