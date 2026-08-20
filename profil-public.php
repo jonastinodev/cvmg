@@ -1,18 +1,26 @@
 <?php
-// profil-public.php — Affiche un profil CV Express sans authentification.
-// Accessible via profil-public.php?id=X (lien QR code ou tableau de bord opérateur).
+// profil-public.php — Fiche publique d'un profil CV Express.
+//
+// Contexte de lecture : un employeur vient de scanner un QR code, il est
+// sur un téléphone, souvent dehors et avec une connexion faible. Une seule
+// action compte pour lui : appeler. Toute la page est bâtie autour de ça.
+//
+// Le numéro de CIN est volontairement absent du rendu : il est stocké pour
+// l'opérateur, mais l'afficher sur une page publique exposerait un numéro
+// d'identité nationale à n'importe qui possédant le lien.
 
 require_once __DIR__ . '/session.php';
 require_once __DIR__ . '/bdd.php';
 
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+$erreur = '';
+
 if ($id <= 0) {
     http_response_code(404);
-    $erreur = 'Identifiant manquant.';
+    $erreur = 'Ce lien ne désigne aucun profil.';
 } else {
-    $pdo  = bdd();
-    $stmt = $pdo->prepare(
-        'SELECT donnees_json, type, rayon_km, date_creation
+    $stmt = bdd()->prepare(
+        'SELECT donnees_json, rayon_km, date_creation
          FROM cv
          WHERE id = :id AND est_public = 1'
     );
@@ -21,20 +29,28 @@ if ($id <= 0) {
 
     if (!$ligne) {
         http_response_code(404);
-        $erreur = 'Profil introuvable ou non public.';
+        $erreur = "Ce profil n'existe pas ou n'est plus public.";
     } else {
-        $donnees  = json_decode($ligne['donnees_json'], true) ?: [];
-        $pers     = $donnees['personnel'] ?? [];
-        $nom      = trim(($pers['prenom'] ?? '') . ' ' . ($pers['nom'] ?? ''));
-        $metier   = $pers['titre_professionnel'] ?? '';
-        $telephone = $pers['telephone'] ?? '';
-        $email     = $pers['email'] ?? '';
-        $ville     = $pers['ville'] ?? '';
-        $photo     = $pers['photo_url'] ?? '';
-        $rayon     = (int)$ligne['rayon_km'];
+        $donnees = json_decode($ligne['donnees_json'], true) ?: [];
+        $pers    = $donnees['personnel'] ?? [];
+
+        $prenom    = trim($pers['prenom'] ?? '');
+        $nomFamille= trim($pers['nom'] ?? '');
+        $nom       = trim($prenom . ' ' . $nomFamille);
+        $metier    = trim($pers['titre_professionnel'] ?? '');
+        $telephone = trim($pers['telephone'] ?? '');
+        $email     = trim($pers['email'] ?? '');
+        $ville     = trim($pers['ville'] ?? '');
+        $photo     = trim($pers['photo_url'] ?? '');
+
+        $rayon      = (int)$ligne['rayon_km'];
         $rayonLabel = $rayon >= 99 ? 'Plus de 10 km' : $rayon . ' km';
+
+        // Initiales pour le monogramme, en repli si aucune photo.
+        $initiales = mb_strtoupper(mb_substr($prenom, 0, 1) . mb_substr($nomFamille, 0, 1));
+
         $dateCreation = date('d/m/Y', strtotime($ligne['date_creation']));
-        $erreur = '';
+        $telBrut      = preg_replace('/[^0-9+]/', '', $telephone);
     }
 }
 ?>
@@ -43,272 +59,246 @@ if ($id <= 0) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title><?= $erreur ? 'Profil introuvable — CVMG' : htmlspecialchars($nom . ' · ' . $metier . ' — CVMG') ?></title>
-<meta name="theme-color" content="#D97706">
+<title><?= $erreur ? 'Profil introuvable — CVMG' : htmlspecialchars($nom . ' — ' . $metier) ?></title>
+<meta name="theme-color" content="#1655D8">
 <?php if (!$erreur): ?>
-<meta name="description" content="<?= htmlspecialchars($nom) ?> — <?= htmlspecialchars($metier) ?>, disponible dans un rayon de <?= htmlspecialchars($rayonLabel) ?>.">
+<meta name="description" content="<?= htmlspecialchars($nom) ?>, <?= htmlspecialchars($metier) ?><?= $ville ? ' à ' . htmlspecialchars($ville) : '' ?>. Se déplace dans un rayon de <?= htmlspecialchars($rayonLabel) ?>.">
 <?php endif; ?>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="assets/cvmg.css">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap');
+  /* ---- Mise en page de la fiche ------------------------- */
+  .page { min-height: 100vh; display: flex; flex-direction: column; }
+  .contenu { flex: 1; padding-block: var(--e-6) var(--e-8); }
 
-  :root {
-    --orange: #D97706; --orange-fonce: #B45A08; --orange-clair: #FFF8EC;
-    --bleu-marine: #0B1F3D; --texte: #22262B; --gris: #5B6472;
-    --fond: #F6F7F9; --blanc: #fff; --bordure: #E4E7EB;
-    --vert: #16A34A; --vert-clair: #F0FDF4;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --fond: #0F1923; --blanc: #1A2535; --bordure: #263044;
-      --texte: #E8EDF4; --gris: #8B97A8; --bleu-marine: #C8D8F0;
-      --orange-clair: #2A1E08; --vert-clair: #052E16;
-    }
-  }
-  :root[data-theme="dark"] {
-    --fond: #0F1923; --blanc: #1A2535; --bordure: #263044;
-    --texte: #E8EDF4; --gris: #8B97A8; --bleu-marine: #C8D8F0;
-    --orange-clair: #2A1E08; --vert-clair: #052E16;
+  /* ---- Bandeau d'identité ------------------------------- */
+  .fiche { overflow: hidden; }
+
+  .fiche__entete {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--e-3);
+    padding: var(--e-3) var(--e-5);
+    background: var(--c-surface-2);
+    border-bottom: 1px solid var(--c-ligne);
   }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'Inter', Arial, sans-serif;
-    background: var(--fond); color: var(--texte);
-    min-height: 100vh;
-  }
-  a { color: inherit; text-decoration: none; }
+  .fiche__corps { padding: var(--e-5); }
 
-  /* ── nav ── */
-  nav {
-    background: var(--blanc); border-bottom: 1px solid var(--bordure);
-  }
-  .nav-int {
-    max-width: 680px; margin: 0 auto; padding: 0 20px;
-    display: flex; align-items: center; justify-content: space-between; height: 52px;
-  }
-  .logo {
-    font-family: 'Poppins', sans-serif; font-weight: 800;
-    font-size: 14pt; color: var(--bleu-marine); letter-spacing: -.3px;
-  }
-  .logo span { color: var(--orange); }
-  .nav-lien { font-size: 9.5pt; color: var(--gris); }
-  .nav-lien:hover { color: var(--texte); }
+  /* Identité : monogramme + nom + métier, alignés en ligne dès
+     qu'il y a la place, empilés sur les très petits écrans. */
+  .identite { display: flex; align-items: center; gap: var(--e-4); }
 
-  /* ── contenu ── */
-  main {
-    max-width: 680px; margin: 0 auto;
-    padding: 32px 20px 80px;
+  .monogramme {
+    width: 64px; height: 64px; flex-shrink: 0;
+    border-radius: var(--r-rond);
+    background: var(--c-bleu-pale);
+    color: var(--c-bleu);
+    display: grid; place-items: center;
+    font-family: var(--police-titre);
+    font-weight: 700; font-size: var(--t-xl);
+    letter-spacing: .01em;
+    overflow: hidden;
   }
+  .monogramme img { width: 100%; height: 100%; object-fit: cover; }
 
-  /* ── carte profil ── */
-  .carte {
-    background: var(--blanc); border: 1px solid var(--bordure);
-    border-radius: 14px; overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  .identite__nom {
+    font-size: var(--t-xl);
+    font-weight: 700;
+    letter-spacing: -.015em;
+  }
+  .identite__metier {
+    font-size: var(--t-l);
+    font-weight: 600;
+    color: var(--c-bleu);
+    margin-top: 2px;
   }
 
-  /* bandeau orange en haut */
-  .carte-header {
-    background: var(--orange); padding: 28px 28px 56px;
-    position: relative;
+  /* ---- Faits : rayon, ville ----------------------------- */
+  .faits {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: var(--e-4);
+    margin-top: var(--e-5);
+    padding-top: var(--e-5);
+    border-top: 1px solid var(--c-ligne);
   }
-  .badge-express {
-    display: inline-flex; align-items: center; gap: 5px;
-    background: rgba(255,255,255,.2); color: #fff;
-    font-size: 8.5pt; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
-    padding: 3px 10px; border-radius: 20px; margin-bottom: 12px;
+  .fait__valeur {
+    display: flex; align-items: center; gap: var(--e-2);
+    font-size: var(--t-l); font-weight: 600;
+    margin-top: var(--e-1);
+  }
+  .fait__valeur svg { width: 18px; height: 18px; color: var(--c-encre-3); flex-shrink: 0; }
+
+  /* ---- Action d'appel -----------------------------------
+     Le numéro lui-même fait office de bouton : l'employeur doit
+     pouvoir le lire à voix haute autant que le taper du pouce. */
+  .appel { margin-top: var(--e-5); }
+  .appel__numero { font-size: var(--t-xl); letter-spacing: .01em; }
+  .appel__note {
+    margin-top: var(--e-2);
+    font-size: var(--t-s);
+    color: var(--c-encre-3);
+    text-align: center;
   }
 
-  /* avatar (photo ou initiales) */
-  .avatar-wrap {
-    position: absolute; bottom: -40px; left: 28px;
-    width: 80px; height: 80px; border-radius: 50%;
-    border: 4px solid var(--blanc);
-    overflow: hidden; background: var(--orange-clair);
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Poppins', sans-serif; font-size: 22pt; font-weight: 700;
-    color: var(--orange); box-shadow: 0 2px 6px rgba(0,0,0,.12);
-  }
-  .avatar-wrap img {
-    width: 100%; height: 100%; object-fit: cover;
+  /* ---- Pied de fiche ------------------------------------ */
+  .fiche__pied {
+    padding: var(--e-3) var(--e-5);
+    background: var(--c-surface-2);
+    border-top: 1px solid var(--c-ligne);
+    font-size: var(--t-s);
+    color: var(--c-encre-3);
+    display: flex; justify-content: space-between; gap: var(--e-3); flex-wrap: wrap;
   }
 
-  /* corps de la carte */
-  .carte-body { padding: 52px 28px 28px; }
+  /* ---- Renvoi vers l'application ------------------------ */
+  .renvoi {
+    margin-top: var(--e-5);
+    text-align: center;
+    font-size: var(--t-s);
+    color: var(--c-encre-3);
+  }
+  .renvoi a { color: var(--c-bleu); font-weight: 600; }
+  .renvoi a:hover { text-decoration: underline; }
 
-  .nom-complet {
-    font-family: 'Poppins', sans-serif; font-weight: 700;
-    font-size: 17pt; color: var(--bleu-marine); margin-bottom: 4px;
-    text-wrap: balance;
-  }
-  .metier-titre {
-    font-size: 12pt; color: var(--orange); font-weight: 600;
-    margin-bottom: 20px;
-  }
+  /* ---- État vide ---------------------------------------- */
+  .absent { text-align: center; padding-block: var(--e-8); }
+  .absent__titre { font-size: var(--t-xl); font-weight: 700; margin-bottom: var(--e-2); }
+  .absent p { color: var(--c-encre-2); margin-bottom: var(--e-5); }
 
-  /* puces d'info */
-  .infos { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
-  .info-ligne {
-    display: flex; align-items: center; gap: 10px;
-    font-size: 10.5pt; color: var(--gris);
-  }
-  .info-icone {
-    width: 32px; height: 32px; border-radius: 8px;
-    background: var(--orange-clair); color: var(--orange);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px; flex-shrink: 0;
-  }
-  .info-ligne strong { color: var(--texte); }
-
-  /* disponibilité */
-  .dispo {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: var(--vert-clair); color: var(--vert);
-    font-size: 9.5pt; font-weight: 600; padding: 5px 12px;
-    border-radius: 20px; margin-bottom: 24px;
-  }
-  .dispo::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--vert); }
-
-  /* bouton contact */
-  .btn-contact {
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    width: 100%; background: var(--orange); color: #fff;
-    font-weight: 600; font-size: 11pt; padding: 13px 20px;
-    border: none; border-radius: 9px; cursor: pointer;
-    transition: background .15s; text-decoration: none;
-  }
-  .btn-contact:hover { background: var(--orange-fonce); }
-
-  /* ── date de création ── */
-  .date-creation {
-    text-align: center; font-size: 9pt; color: var(--gris);
-    margin-top: 16px;
-  }
-
-  /* ── page d'erreur ── */
-  .erreur-page {
-    text-align: center; padding: 80px 20px;
-  }
-  .erreur-icone { font-size: 40pt; margin-bottom: 16px; }
-  .erreur-titre {
-    font-family: 'Poppins', sans-serif; font-size: 16pt;
-    font-weight: 700; color: var(--bleu-marine); margin-bottom: 10px;
-  }
-  .erreur-msg { color: var(--gris); font-size: 11pt; margin-bottom: 24px; }
-  .btn-retour {
-    display: inline-block; background: var(--orange); color: #fff;
-    font-weight: 600; padding: 11px 24px; border-radius: 8px;
-    transition: background .15s;
-  }
-  .btn-retour:hover { background: var(--orange-fonce); }
-
-  /* ── footer ── */
-  .pied {
-    text-align: center; font-size: 9pt; color: var(--gris);
-    padding: 24px 20px 0; border-top: 1px solid var(--bordure);
-    margin-top: 40px;
-  }
-  .pied a { color: var(--orange); }
-
-  @media (max-width: 480px) {
-    .carte-body { padding: 52px 18px 22px; }
-    .carte-header { padding: 22px 18px 52px; }
+  @media (max-width: 400px) {
+    .identite { flex-direction: column; align-items: flex-start; gap: var(--e-3); }
+    .fiche__corps { padding: var(--e-4); }
   }
 </style>
 </head>
-<body>
+<body class="page">
 
-<nav>
-  <div class="nav-int">
-    <a href="accueil.html" class="logo">CV<span>MG</span></a>
-    <a href="accueil.html" class="nav-lien">Accueil</a>
+<header class="barre">
+  <div class="enveloppe enveloppe--etroite barre__int">
+    <a href="accueil.php" class="marque">CV<em>MG</em></a>
+    <span class="libelle">Profil public</span>
   </div>
-</nav>
+</header>
 
-<main>
+<main class="contenu">
+  <div class="enveloppe enveloppe--etroite">
 
 <?php if ($erreur): ?>
-  <div class="erreur-page">
-    <div class="erreur-icone">🔍</div>
-    <div class="erreur-titre">Profil introuvable</div>
-    <p class="erreur-msg"><?= htmlspecialchars($erreur) ?></p>
-    <a href="accueil.html" class="btn-retour">Retour à l'accueil</a>
-  </div>
+
+    <div class="absent">
+      <h1 class="absent__titre">Profil introuvable</h1>
+      <p><?= htmlspecialchars($erreur) ?></p>
+      <a href="accueil.php" class="btn btn--principal">Retour à l'accueil</a>
+    </div>
 
 <?php else: ?>
-  <div class="carte">
 
-    <div class="carte-header">
-      <div class="badge-express">⚡ CV Express</div>
+    <article class="carte fiche">
 
-      <div class="avatar-wrap">
-        <?php if ($photo): ?>
-          <img src="<?= htmlspecialchars($photo) ?>" alt="Photo de <?= htmlspecialchars($nom) ?>">
-        <?php else: ?>
-          <?= mb_strtoupper(mb_substr($pers['prenom'] ?? 'X', 0, 1)) ?>
-        <?php endif; ?>
+      <div class="fiche__entete">
+        <span class="libelle">CV Express</span>
+        <span class="libelle chiffres">Créé le <?= $dateCreation ?></span>
       </div>
-    </div>
 
-    <div class="carte-body">
-      <h1 class="nom-complet"><?= htmlspecialchars($nom) ?></h1>
-      <p class="metier-titre"><?= htmlspecialchars($metier) ?></p>
+      <div class="fiche__corps">
 
-      <div class="dispo">Disponible</div>
-
-      <div class="infos">
-        <div class="info-ligne">
-          <div class="info-icone">📍</div>
-          <span>Rayon de déplacement : <strong><?= htmlspecialchars($rayonLabel) ?></strong></span>
+        <div class="identite">
+          <div class="monogramme" aria-hidden="true">
+            <?php if ($photo): ?>
+              <img src="<?= htmlspecialchars($photo) ?>" alt="">
+            <?php else: ?>
+              <?= htmlspecialchars($initiales) ?>
+            <?php endif; ?>
+          </div>
+          <div>
+            <h1 class="identite__nom"><?= htmlspecialchars($nom) ?></h1>
+            <p class="identite__metier"><?= htmlspecialchars($metier) ?></p>
+          </div>
         </div>
 
-        <?php if ($ville): ?>
-        <div class="info-ligne">
-          <div class="info-icone">🏙️</div>
-          <span>Ville : <strong><?= htmlspecialchars($ville) ?></strong></span>
+        <div class="faits">
+          <div>
+            <div class="libelle">Se déplace jusqu'à</div>
+            <div class="fait__valeur">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              <span><?= htmlspecialchars($rayonLabel) ?></span>
+            </div>
+          </div>
+
+          <?php if ($ville): ?>
+          <div>
+            <div class="libelle">Basé à</div>
+            <div class="fait__valeur">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 21h18M5 21V7l7-4 7 4v14"/>
+                <path d="M10 21v-5h4v5"/>
+              </svg>
+              <span><?= htmlspecialchars($ville) ?></span>
+            </div>
+          </div>
+          <?php endif; ?>
         </div>
-        <?php endif; ?>
 
         <?php if ($telephone): ?>
-        <div class="info-ligne">
-          <div class="info-icone">📞</div>
-          <span><strong><?= htmlspecialchars($telephone) ?></strong></span>
-        </div>
+          <div class="appel">
+            <a href="tel:<?= htmlspecialchars($telBrut) ?>" class="btn btn--principal btn--large">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/>
+              </svg>
+              <span class="appel__numero chiffres"><?= htmlspecialchars($telephone) ?></span>
+            </a>
+            <p class="appel__note">Touchez le numéro pour appeler directement</p>
+          </div>
+
+        <?php elseif ($email): ?>
+          <div class="appel">
+            <a href="mailto:<?= htmlspecialchars($email) ?>" class="btn btn--principal btn--large">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="2" y="4" width="20" height="16" rx="2"/>
+                <path d="m2 7 10 6 10-6"/>
+              </svg>
+              <span>Écrire à <?= htmlspecialchars($prenom) ?></span>
+            </a>
+          </div>
+
+        <?php else: ?>
+          <div class="appel">
+            <p class="appel__note">
+              Aucun moyen de contact n'a été renseigné sur ce profil.
+            </p>
+          </div>
         <?php endif; ?>
 
-        <?php if ($email): ?>
-        <div class="info-ligne">
-          <div class="info-icone">✉️</div>
-          <span><strong><?= htmlspecialchars($email) ?></strong></span>
-        </div>
-        <?php endif; ?>
       </div>
 
-      <?php if ($telephone): ?>
-        <a href="tel:<?= htmlspecialchars(preg_replace('/\s+/', '', $telephone)) ?>" class="btn-contact">
-          📞 Contacter <?= htmlspecialchars($pers['prenom'] ?? '') ?>
-        </a>
-      <?php elseif ($email): ?>
-        <a href="mailto:<?= htmlspecialchars($email) ?>" class="btn-contact">
-          ✉️ Envoyer un message
-        </a>
-      <?php else: ?>
-        <a href="accueil.html" class="btn-contact">
-          ⚡ Créer votre propre CV Express
-        </a>
-      <?php endif; ?>
+      <div class="fiche__pied">
+        <span>Profil créé en cybercafé partenaire</span>
+        <span>CVMG</span>
+      </div>
 
-      <p class="date-creation">Profil créé le <?= $dateCreation ?></p>
-    </div>
-  </div>
+    </article>
+
+    <p class="renvoi">
+      Vous cherchez du travail ?
+      <a href="accueil.php">Créez votre CV gratuitement</a>
+    </p>
 
 <?php endif; ?>
 
+  </div>
 </main>
-
-<footer class="pied">
-  Propulsé par <a href="accueil.html">CVMG</a> — Générateur de CV pour Madagascar
-</footer>
 
 </body>
 </html>

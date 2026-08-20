@@ -1,0 +1,271 @@
+/* ============================================================
+   cvmg.css — Socle visuel partagé de l'application CVMG.
+
+   Une seule source pour les couleurs, la typographie et les
+   espacements. Toute page de l'app se branche ici plutôt que de
+   redéclarer ses propres tokens.
+
+   NE PAS confondre avec cv-template.php : ce dernier rend le
+   document CV pour dompdf et garde ses unités mm/pt. Ici on est
+   dans le navigateur, donc tout est en px/rem.
+   ============================================================ */
+
+/* ---- Tokens : thème clair (défaut) ---------------------- */
+:root {
+  /* Neutres légèrement bleutés — accordés à la couleur de marque,
+     jamais un gris pur qui sonnerait « non choisi ». */
+  --c-encre:      #10151C;
+  --c-encre-2:    #3D4756;
+  --c-encre-3:    #6B7686;
+  --c-ligne:      #E2E6EC;
+  --c-ligne-forte:#CBD2DC;
+  --c-surface:    #FFFFFF;
+  --c-surface-2:  #F4F6F9;
+  --c-fond:       #EEF1F6;
+
+  /* Marque : un seul bleu porteur, décliné. */
+  --c-bleu:       #1655D8;
+  --c-bleu-fonce: #103F9E;
+  --c-bleu-pale:  #E8EFFD;
+
+  /* Accent unique de l'application. Employé avec parcimonie :
+     un accent qui apparaît partout n'accentue plus rien. */
+  --c-accent:     #F7941D;
+  --c-accent-pale:#FFF3E2;
+
+  /* Sémantique — distincte de l'accent. */
+  --c-ok:         #157F4A;
+  --c-ok-pale:    #E7F6ED;
+
+  --ombre-1: 0 1px 2px rgba(16,21,28,.06), 0 1px 3px rgba(16,21,28,.04);
+  --ombre-2: 0 2px 4px rgba(16,21,28,.06), 0 6px 16px rgba(16,21,28,.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="clair"]) {
+    --c-encre:      #EDF1F7;
+    --c-encre-2:    #AEB8C7;
+    --c-encre-3:    #7E8898;
+    --c-ligne:      #232C3A;
+    --c-ligne-forte:#333F52;
+    --c-surface:    #151C26;
+    --c-surface-2:  #1C2430;
+    --c-fond:       #0D1219;
+
+    --c-bleu:       #6494FF;
+    --c-bleu-fonce: #9BB8FF;
+    --c-bleu-pale:  #17233C;
+
+    --c-accent:     #FFAA47;
+    --c-accent-pale:#2C1D08;
+
+    --c-ok:         #4ECB8A;
+    --c-ok-pale:    #0C2418;
+
+    --ombre-1: 0 1px 2px rgba(0,0,0,.4);
+    --ombre-2: 0 2px 4px rgba(0,0,0,.3), 0 6px 16px rgba(0,0,0,.35);
+  }
+}
+
+:root[data-theme="sombre"] {
+  --c-encre:      #EDF1F7;
+  --c-encre-2:    #AEB8C7;
+  --c-encre-3:    #7E8898;
+  --c-ligne:      #232C3A;
+  --c-ligne-forte:#333F52;
+  --c-surface:    #151C26;
+  --c-surface-2:  #1C2430;
+  --c-fond:       #0D1219;
+
+  --c-bleu:       #6494FF;
+  --c-bleu-fonce: #9BB8FF;
+  --c-bleu-pale:  #17233C;
+
+  --c-accent:     #FFAA47;
+  --c-accent-pale:#2C1D08;
+
+  --c-ok:         #4ECB8A;
+  --c-ok-pale:    #0C2418;
+
+  --ombre-1: 0 1px 2px rgba(0,0,0,.4);
+  --ombre-2: 0 2px 4px rgba(0,0,0,.3), 0 6px 16px rgba(0,0,0,.35);
+}
+
+/* ---- Échelle typographique ------------------------------
+   Six pas sur un ratio de 1,25 à partir d'un corps de 15px.
+   Le pas « géant » sert au seul chiffre mis en avant (téléphone).
+   -------------------------------------------------------- */
+:root {
+  --t-xs:   12px;
+  --t-s:  13.5px;
+  --t-m:    15px;
+  --t-l:    19px;
+  --t-xl:   24px;
+  --t-2xl:  30px;
+  --t-3xl:  37px;
+
+  --police-titre: 'Poppins', 'Segoe UI', system-ui, sans-serif;
+  --police-texte: 'Inter', 'Segoe UI', system-ui, sans-serif;
+
+  /* ---- Échelle d'espacement (base 4px) ---- */
+  --e-1: 4px;  --e-2: 8px;  --e-3: 12px; --e-4: 16px;
+  --e-5: 24px; --e-6: 32px; --e-7: 48px; --e-8: 64px;
+
+  /* ---- Rayons ---- */
+  --r-s: 6px; --r-m: 10px; --r-l: 16px; --r-rond: 999px;
+}
+
+/* ---- Base ----------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; padding: 0; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  font-family: var(--police-texte);
+  font-size: var(--t-m);
+  line-height: 1.55;
+  color: var(--c-encre);
+  background: var(--c-fond);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 {
+  font-family: var(--police-titre);
+  line-height: 1.18;
+  text-wrap: balance;
+  color: var(--c-encre);
+}
+
+a { color: inherit; text-decoration: none; }
+
+img, svg { display: block; max-width: 100%; }
+
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--c-bleu);
+  outline-offset: 2px;
+  border-radius: var(--r-s);
+}
+
+/* ---- Conteneur ------------------------------------------ */
+.enveloppe {
+  width: 100%;
+  max-width: 1140px;
+  margin-inline: auto;
+  padding-inline: var(--e-5);
+}
+.enveloppe--etroite { max-width: 620px; }
+
+/* ---- Libellé de section (petites capitales espacées) ----- */
+.libelle {
+  font-size: var(--t-xs);
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--c-encre-3);
+}
+
+/* ---- Boutons --------------------------------------------
+   Trois niveaux seulement. La hiérarchie se lit au remplissage,
+   pas à la teinte : deux boutons pleins côte à côte ne se
+   hiérarchisent pas, quelle que soit leur couleur.
+   -------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--e-2);
+  font-family: inherit;
+  font-size: var(--t-m);
+  font-weight: 600;
+  line-height: 1.2;
+  padding: var(--e-3) var(--e-5);
+  border: 1.5px solid transparent;
+  border-radius: var(--r-m);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s ease, border-color .15s ease, color .15s ease;
+}
+.btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+.btn--principal { background: var(--c-bleu); color: #fff; }
+.btn--principal:hover { background: var(--c-bleu-fonce); }
+
+.btn--second {
+  background: transparent;
+  color: var(--c-bleu);
+  border-color: var(--c-ligne-forte);
+}
+.btn--second:hover { background: var(--c-bleu-pale); border-color: var(--c-bleu); }
+
+.btn--discret { background: transparent; color: var(--c-encre-2); padding-inline: var(--e-3); }
+.btn--discret:hover { color: var(--c-encre); background: var(--c-surface-2); }
+
+.btn--large { width: 100%; padding-block: var(--e-4); font-size: var(--t-l); }
+.btn--compact { padding: var(--e-2) var(--e-3); font-size: var(--t-s); }
+
+.btn:disabled, .btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; }
+
+/* ---- Surface carte -------------------------------------- */
+.carte {
+  background: var(--c-surface);
+  border: 1px solid var(--c-ligne);
+  border-radius: var(--r-l);
+  box-shadow: var(--ombre-1);
+}
+
+/* ---- Pastille ------------------------------------------- */
+.pastille {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-1);
+  font-size: var(--t-xs);
+  font-weight: 600;
+  padding: var(--e-1) var(--e-3);
+  border-radius: var(--r-rond);
+}
+.pastille--ok { background: var(--c-ok-pale); color: var(--c-ok); }
+.pastille--accent { background: var(--c-accent-pale); color: var(--c-accent); }
+.pastille svg { width: 14px; height: 14px; }
+
+/* ---- Barre de navigation applicative -------------------- */
+.barre {
+  background: var(--c-surface);
+  border-bottom: 1px solid var(--c-ligne);
+}
+.barre__int {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-4);
+  min-height: 56px;
+}
+.marque {
+  font-family: var(--police-titre);
+  font-weight: 800;
+  font-size: var(--t-l);
+  letter-spacing: -.02em;
+  color: var(--c-encre);
+}
+.marque em { font-style: normal; color: var(--c-accent); }
+
+/* ---- Utilitaires ---------------------------------------- */
+.pile { display: flex; flex-direction: column; }
+.pile--2 { gap: var(--e-2); }
+.pile--3 { gap: var(--e-3); }
+.pile--4 { gap: var(--e-4); }
+.pile--5 { gap: var(--e-5); }
+.rang { display: flex; align-items: center; gap: var(--e-3); flex-wrap: wrap; }
+.chiffres { font-variant-numeric: tabular-nums; }
+.visuellement-cache {
+  position: absolute; width: 1px; height: 1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
