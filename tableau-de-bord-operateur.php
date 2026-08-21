@@ -80,6 +80,12 @@ function dateRelativeTdb(string $dateSql): string {
     background: var(--orange); color: #fff; font-weight: 600; font-size: 10pt;
     padding: 9px 18px; border-radius: 7px; transition: background .15s; }
   .btn-nouveau:hover { background: var(--orange-fonce); }
+  .actions-entete { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .btn-recherche { display: inline-flex; align-items: center; gap: 6px;
+    background: none; border: 1.5px solid var(--bleu); color: var(--bleu);
+    font-weight: 600; font-size: 10pt; padding: 8px 16px; border-radius: 7px;
+    transition: background .15s; }
+  .btn-recherche:hover { background: #EEF3FF; }
 
   /* ── tableau ── */
   .wrap-table { overflow-x: auto; border-radius: 10px; border: 1px solid var(--bordure);
@@ -138,7 +144,10 @@ function dateRelativeTdb(string $dateSql): string {
       <h1>CV Express créés</h1>
       <p class="compteur"><?= $total ?> profil<?= $total > 1 ? 's' : '' ?> publié<?= $total > 1 ? 's' : '' ?></p>
     </div>
-    <a href="express-cv.php" class="btn-nouveau">⚡ Nouveau CV Express</a>
+    <div class="actions-entete">
+      <a href="recherche.php" class="btn-recherche">🔍 Rechercher pour un employeur</a>
+      <a href="express-cv.php" class="btn-nouveau">⚡ Nouveau CV Express</a>
+    </div>
   </div>
 
   <?php if (empty($cvExpress)): ?>

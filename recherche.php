@@ -1,10 +1,10 @@
 <?php
-// recherche.php — Recherche employeur en ligne, libre-service (FR-1/FR-2/FR-3).
-//
-// Page publique, sans compte, sans session opérateur. Un employeur choisit un
-// métier et une sous-zone dans des listes normalisées (jamais de texte libre),
-// et voit les profils Express qui correspondent — contact masqué : jamais le
-// numéro complet ni le CIN dans cette page (FR-2, FR-12).
+// recherche.php — Recherche employeur en ligne, libre-service (FR-1/FR-2/FR-3),
+// et recherche assistée par l'opérateur (FR-4) : même page, pas de page distincte.
+// Un employeur (ou un opérateur en son nom) choisit un métier et une sous-zone
+// dans des listes normalisées (jamais de texte libre), et voit les profils
+// Express qui correspondent — contact masqué : jamais le numéro complet ni le
+// CIN dans cette page (FR-2, FR-12).
 //
 // Le déblocage de contact (FR-5/FR-6/FR-7, encaissement en cybercafé) n'est
 // pas encore construit — volontairement laissé pour une étape suivante, voir
@@ -12,6 +12,12 @@
 
 require_once __DIR__ . '/session.php';
 require_once __DIR__ . '/bdd.php';
+
+// Recherche assistée par l'opérateur (FR-4, Story 3.1) : réutilise cette même
+// page — pas de page distincte — pour un opérateur avec une session active.
+// Résultats et masquage identiques à la recherche publique, seul l'en-tête
+// change pour permettre un retour au tableau de bord.
+$estOperateur = !empty($_SESSION['est_operateur']);
 
 $metiers = json_decode(file_get_contents(__DIR__ . '/metiers.json') ?: '[]', true) ?: [];
 $zones   = json_decode(file_get_contents(__DIR__ . '/zones.json')   ?: '[]', true) ?: [];
@@ -121,6 +127,9 @@ if ($aRecherche) {
     text-align: center; font-size: var(--t-s); color: var(--c-encre-3);
     margin-top: var(--e-5);
   }
+
+  .lien-retour { text-decoration: underline; text-underline-offset: 2px; }
+  .lien-retour:hover { color: var(--c-bleu); }
 </style>
 </head>
 <body class="page">
@@ -128,7 +137,11 @@ if ($aRecherche) {
 <header class="barre">
   <div class="enveloppe enveloppe--etroite barre__int">
     <a href="accueil.php" class="marque">CV<em>MG</em></a>
-    <span class="libelle">Trouver un travailleur</span>
+    <?php if ($estOperateur): ?>
+      <a href="tableau-de-bord-operateur.php" class="libelle lien-retour">← Tableau de bord</a>
+    <?php else: ?>
+      <span class="libelle">Trouver un travailleur</span>
+    <?php endif; ?>
   </div>
 </header>
 
@@ -187,7 +200,9 @@ if ($aRecherche) {
         <?php endforeach; ?>
       </div>
 
-      <p class="note-contact">Pour contacter un profil, rendez-vous dans un cybercafé partenaire — le déblocage de contact en ligne arrive bientôt.</p>
+      <?php if (!$estOperateur): ?>
+        <p class="note-contact">Pour contacter un profil, rendez-vous dans un cybercafé partenaire — le déblocage de contact en ligne arrive bientôt.</p>
+      <?php endif; ?>
 
     <?php endif; ?>
 
