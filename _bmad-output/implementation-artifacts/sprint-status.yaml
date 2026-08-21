@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 08-21-2026 11:35
-last_updated: 08-21-2026 11:40
+last_updated: 08-21-2026 13:45
 project: cvmg
 project_key: NOKEY
 tracking_system: file-system
@@ -41,9 +41,9 @@ development_status:
   1-3-recherche-employeur-par-métier-et-zone-résultats-masqués-fai: done
   epic-1-retrospective: optional
 
-  epic-2: backlog
-  2-1-consentement-horodaté-à-l-inscription-appliqué-à-la-recherch: backlog
-  2-2-suppression-de-profil-sur-demande: backlog
+  epic-2: in-progress
+  2-1-consentement-horodaté-à-l-inscription-appliqué-à-la-recherch: in-progress
+  2-2-suppression-de-profil-sur-demande: review
   epic-2-retrospective: optional
 
   epic-3: backlog
