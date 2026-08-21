@@ -6,16 +6,21 @@
 // Express qui correspondent — contact masqué : jamais le numéro complet ni le
 // CIN dans cette page (FR-2, FR-12).
 //
-// Le déblocage de contact (FR-5/FR-6/FR-7, Story 3.2) se fait exclusivement
-// depuis l'écran opérateur de cette même page, via debloquer-contact.php —
-// jamais de numéro dans le HTML tant que l'encaissement n'est pas confirmé
-// (voir la boucle de résultats plus bas).
+// Le déblocage de contact lui-même (FR-6/FR-7, Story 3.2) se fait
+// exclusivement depuis l'écran opérateur de cette même page, via
+// debloquer-contact.php — jamais de numéro dans le HTML tant que
+// l'encaissement n'est pas confirmé. Pour l'employeur en ligne (FR-5,
+// Story 3.3), cette page se contente d'indiquer le prix fixe et la marche
+// à suivre (cybercafé partenaire, en espèces) — pas de paiement en ligne
+// (NFR2).
 
 require_once __DIR__ . '/session.php';
 require_once __DIR__ . '/bdd.php';
 require_once __DIR__ . '/constantes-express.php';
 
-$labelPrixDeblocage = number_format(PRIX_DEBLOCAGE_AR, 0, ',', ' ') . ' Ar';
+// Espace insécable dans le séparateur de milliers : évite que "10 000 Ar"
+// se coupe entre "10" et "000 Ar" sur petit écran (page responsive dès 620px).
+$labelPrixDeblocage = number_format(PRIX_DEBLOCAGE_AR, 0, ',', "\u{a0}") . "\u{a0}Ar";
 
 // Recherche assistée par l'opérateur (FR-4, Story 3.1) : réutilise cette même
 // page — pas de page distincte — pour un opérateur avec une session active.
@@ -217,7 +222,7 @@ if ($aRecherche) {
       </div>
 
       <?php if (!$estOperateur): ?>
-        <p class="note-contact">Pour contacter un profil, rendez-vous dans un cybercafé partenaire — le déblocage de contact en ligne arrive bientôt.</p>
+        <p class="note-contact">Pour obtenir le numéro d'un profil, rendez-vous avec <?= htmlspecialchars($labelPrixDeblocage) ?> en espèces dans un cybercafé partenaire — même prix fixe pour chaque profil débloqué, dans toutes les zones. Aucun paiement en ligne n'est proposé.</p>
       <?php endif; ?>
 
     <?php endif; ?>

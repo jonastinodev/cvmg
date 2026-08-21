@@ -33,3 +33,7 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-3-2-encaissement-et-revelation-du-numero.md`
   summary: Une fois révélé, le numéro reste affiché indéfiniment à l'écran de l'opérateur (pas de masquage automatique après un délai, pas de nettoyage à la navigation) — risque si le poste du cybercafé est partagé entre opérateurs/employeurs successifs sans rafraîchir la page entre deux.
   evidence: Trouvé par la revue Blind Hunter en step-oneshot de la Story 3.2. Hors AC (qui exige seulement l'absence de pré-affichage, pas de masquage après coup) ; une temporisation ou un nettoyage à la navigation demande un arbitrage produit sur la durée raisonnable avant de coder quoi que ce soit.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-3-3-instruction-de-deblocage-en-ligne.md`
+  summary: L'instruction affichée à l'employeur en ligne (« rendez-vous dans un cybercafé partenaire ») ne dit pas comment il doit identifier le bon profil une fois sur place — l'opérateur ne dispose que d'une recherche métier/zone (Story 3.1), sans recherche par nom, pour retrouver le profil que l'employeur a repéré en ligne.
+  evidence: Trouvé par la revue Blind Hunter en step-oneshot de la Story 3.3. Hors AC (qui exige seulement le prix et l'instruction cybercafé, pas un mécanisme d'identification) ; combler ça proprement (ex. inviter l'employeur à noter le prénom affiché, ou donner un identifiant de profil à présenter) est une décision produit, pas une correction mécanique.
