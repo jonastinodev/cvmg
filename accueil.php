@@ -234,6 +234,7 @@ $estOperateur = !empty($_SESSION['est_operateur']);
     <div class="nav-logo">CV<span>MG</span></div>
     <div class="nav-liens">
       <a href="#comment-ca-marche">Comment ça marche</a>
+      <a href="recherche.php">Trouver un travailleur</a>
       <?php if ($estConnecte): ?>
         <a href="mes-cv.php" class="btn btn-sm btn-outline">Mes CV</a>
       <?php else: ?>
