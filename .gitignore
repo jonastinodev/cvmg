@@ -4,6 +4,10 @@ config.php
 # Dépendances Composer (réinstallables via composer install)
 /vendor/
 
+# Installation du framework BMAD (régénérable via l'installeur)
+/_bmad/
+/.claude/skills/
+
 # Journaux et fichiers temporaires
 *.log
 .DS_Store
