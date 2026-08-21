@@ -7,6 +7,7 @@ if (empty($_SESSION['utilisateur_id']) || empty($_SESSION['est_operateur'])) {
 $nomOperateur = $_SESSION['utilisateur_nom'] ?? '';
 // La liste sert au rendu des <option> ; plus besoin de l'exposer au JS.
 $metiers = json_decode(file_get_contents(__DIR__ . '/metiers.json') ?: '[]', true) ?: [];
+$zones   = json_decode(file_get_contents(__DIR__ . '/zones.json')   ?: '[]', true) ?: [];
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -116,7 +117,7 @@ $metiers = json_decode(file_get_contents(__DIR__ . '/metiers.json') ?: '[]', tru
     font-size: 9.5pt; font-weight: 600; letter-spacing: .05em;
     text-transform: uppercase; color: var(--gris);
   }
-  #select-metier, #metier-autre {
+  #select-metier, #metier-autre, #select-zone {
     width: 100%; padding: 14px 16px;
     border: 1.5px solid var(--bordure); border-radius: 10px;
     /* 16px minimum : en dessous, iOS zoome à la mise au point du champ. */
@@ -124,7 +125,7 @@ $metiers = json_decode(file_get_contents(__DIR__ . '/metiers.json') ?: '[]', tru
     background: var(--blanc);
     transition: border-color .15s, box-shadow .15s;
   }
-  #select-metier:focus, #metier-autre:focus {
+  #select-metier:focus, #metier-autre:focus, #select-zone:focus {
     outline: none; border-color: var(--orange);
     box-shadow: 0 0 0 3px rgba(217,119,6,.15);
   }
@@ -340,11 +341,20 @@ $metiers = json_decode(file_get_contents(__DIR__ . '/metiers.json') ?: '[]', tru
     <p id="metier-selectionne-label"></p>
   </section>
 
-  <!-- ── ÉCRAN 3 : Rayon ────────────────────────────────────── -->
+  <!-- ── ÉCRAN 3 : Zone et rayon ────────────────────────────── -->
   <section class="ecran ecran-cache" data-ecran="3">
-    <h2 class="titre-ecran">Jusqu'où peut-il se déplacer ?</h2>
-    <p class="sous-titre">Zone de recherche d'emploi autour du cybercafé.</p>
+    <h2 class="titre-ecran">Où habite-t-il, et jusqu'où peut-il se déplacer ?</h2>
+    <p class="sous-titre">Sa sous-zone dans le quartier, puis sa distance de recherche autour.</p>
 
+    <label for="select-zone" class="libelle-champ">Sous-zone</label>
+    <select id="select-zone">
+      <option value="">— Choisir une sous-zone —</option>
+      <?php foreach ($zones as $z): ?>
+        <option value="<?= htmlspecialchars($z) ?>"><?= htmlspecialchars($z) ?></option>
+      <?php endforeach; ?>
+    </select>
+
+    <p class="libelle-champ" style="margin-top:18px">Rayon de déplacement</p>
     <div id="grille-rayon">
       <button type="button" class="btn-rayon" data-km="1">1 km</button>
       <button type="button" class="btn-rayon" data-km="2">2 km</button>
@@ -364,6 +374,7 @@ $metiers = json_decode(file_get_contents(__DIR__ . '/metiers.json') ?: '[]', tru
       <div class="resume-ligne"><span class="resume-cle">Téléphone</span><span id="res-telephone" class="resume-val"></span></div>
       <div class="resume-ligne"><span class="resume-cle">CIN</span><span id="res-cin" class="resume-val"></span></div>
       <div class="resume-ligne"><span class="resume-cle">Métier</span><span id="res-metier" class="resume-val"></span></div>
+      <div class="resume-ligne"><span class="resume-cle">Sous-zone</span><span id="res-zone" class="resume-val"></span></div>
       <div class="resume-ligne"><span class="resume-cle">Rayon</span><span id="res-rayon" class="resume-val"></span></div>
     </div>
 
@@ -387,7 +398,7 @@ const NB_ECRANS    = 4;
 const POURCENTAGES = [25, 50, 75, 100];
 
 // ── ÉTAT ───────────────────────────────────────────────────────
-let express = { nom: '', prenom: '', telephone: '', cin: '', metier: '', rayon: null };
+let express = { nom: '', prenom: '', telephone: '', cin: '', metier: '', zone: '', rayon: null };
 let ecranActuel = 1;
 
 // ── NAVIGATION ─────────────────────────────────────────────────
@@ -430,9 +441,16 @@ function validerEcran(n) {
     alert('Veuillez sélectionner un métier.');
     return false;
   }
-  if (n === 3 && express.rayon === null) {
-    alert('Veuillez choisir un rayon.');
-    return false;
+  if (n === 3) {
+    express.zone = document.getElementById('select-zone').value;
+    if (!express.zone) {
+      alert('Veuillez choisir une sous-zone.');
+      return false;
+    }
+    if (express.rayon === null) {
+      alert('Veuillez choisir un rayon.');
+      return false;
+    }
   }
   return true;
 }
@@ -505,6 +523,7 @@ async function soumettreExpress() {
         telephone: express.telephone,
         cin:       express.cin,
         metier:    express.metier,
+        zone:      express.zone,
         rayon:     express.rayon,
       }),
     });
@@ -553,6 +572,7 @@ function remplirResume() {
   document.getElementById('res-telephone').textContent = express.telephone || '—';
   document.getElementById('res-cin').textContent = express.cin || '—';
   document.getElementById('res-metier').textContent = express.metier || '—';
+  document.getElementById('res-zone').textContent = express.zone || '—';
   document.getElementById('res-rayon').textContent =
     express.rayon === 99 ? 'Plus de 10 km'
     : express.rayon ? express.rayon + ' km'

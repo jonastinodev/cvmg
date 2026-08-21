@@ -33,13 +33,23 @@ $prenom    = trim($entree['prenom']    ?? '');
 $telephone = trim($entree['telephone'] ?? '');
 $cin       = trim($entree['cin']       ?? '');
 $metier    = trim($entree['metier']    ?? '');
+$zone      = trim($entree['zone']      ?? '');
 $rayon     = isset($entree['rayon']) ? (int)$entree['rayon'] : null;
 
 if ($nom === '')        repondreErreur('Le nom est obligatoire.');
 if ($prenom === '')     repondreErreur('Le prénom est obligatoire.');
 if ($telephone === '')  repondreErreur('Le téléphone est obligatoire — sans lui, un employeur ne peut pas contacter la personne.');
 if ($metier === '')     repondreErreur('Le métier est obligatoire.');
+if ($zone === '')       repondreErreur('La sous-zone est obligatoire.');
 if ($rayon === null)    repondreErreur('Le rayon est obligatoire.');
+
+// --- Validation de la zone contre la liste canonique (architecture AD-4) ---
+// Un nom qui ne correspond pas exactement à zones.json romprait silencieusement
+// le JOIN de la future recherche employeur (accent, casse ou espace différent).
+$zonesValides = json_decode(file_get_contents(__DIR__ . '/zones.json') ?: '[]', true) ?: [];
+if (!in_array($zone, $zonesValides, true)) {
+    repondreErreur('Sous-zone invalide.');
+}
 
 // --- Construction du donnees_json (même structure que le CV complet) ---
 // Les champs encore absents (email…) restent vides : profil-public.php
@@ -73,9 +83,9 @@ $donnees = [
 $pdo  = bdd();
 $stmt = $pdo->prepare(
     'INSERT INTO cv
-       (utilisateur_id, titre, donnees_json, date_creation, date_maj, type, rayon_km, est_public)
+       (utilisateur_id, titre, donnees_json, date_creation, date_maj, type, rayon_km, est_public, zone)
      VALUES
-       (:uid, :titre, :donnees, NOW(), NOW(), :type, :rayon, 1)'
+       (:uid, :titre, :donnees, NOW(), NOW(), :type, :rayon, 1, :zone)'
 );
 $stmt->execute([
     ':uid'    => (int)$_SESSION['utilisateur_id'],
@@ -83,6 +93,7 @@ $stmt->execute([
     ':donnees'=> json_encode($donnees, JSON_UNESCAPED_UNICODE),
     ':type'   => 'express',
     ':rayon'  => $rayon,
+    ':zone'   => $zone,
 ]);
 
 $id = (int)$pdo->lastInsertId();
