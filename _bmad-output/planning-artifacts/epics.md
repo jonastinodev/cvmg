@@ -13,7 +13,7 @@ Ce document décompose en epics et stories le PRD « CVMG — Voie Express, côt
 
 ### Functional Requirements
 
-FR-1: Un employeur peut rechercher des travailleurs en sélectionnant un métier (`metiers.json`) et une zone, sans compte. La recherche ne retourne que les travailleurs dont la zone/rayon déclaré couvre la zone recherchée ; aucune saisie en texte libre. **✅ Implémenté (commit `4b40d65`)** — le signal de sous-densité au moment de la recherche (dernière conséquence testable de FR-1) n'est pas couvert, dépend de FR-9.
+FR-1: Un employeur peut rechercher des travailleurs en sélectionnant un métier (`metiers.json`) et une zone, sans compte. La recherche ne retourne que les travailleurs dont la zone/rayon déclaré couvre la zone recherchée ; aucune saisie en texte libre. **✅ Implémenté (commit `4b40d65`)** pour la recherche elle-même — le signal de sous-densité au moment de la recherche (dernière conséquence testable de FR-1) était un orphelin sans story, identifié au sprint planning (2026-08-21) et fermé par la Story 4.3.
 
 FR-2: Les résultats de recherche affichent prénom, métier, zone et rayon — jamais le numéro complet ni le CIN. **✅ Implémenté (commit `4b40d65`)**, vérifié par test (absence confirmée de fuite).
 
@@ -79,7 +79,7 @@ Aucun document UX (`bmad-ux`) n'existe pour ce projet — section sans objet. Le
 
 ### FR Coverage Map
 
-FR-1: Epic 1 - Recherche par métier et zone
+FR-1: Epic 1 - Recherche par métier et zone (+ Epic 4, Story 4.3, pour le signal de densité)
 FR-2: Epic 1 - Résultats à contact masqué
 FR-3: Epic 1 - Filtre par rayon de déplacement
 FR-4: Epic 3 - Recherche assistée par l'opérateur
@@ -119,7 +119,7 @@ Un employeur — en ligne ou via l'opérateur en cybercafé — peut obtenir le 
 
 ### Epic 4: Garde-fou de densité de zone
 Un opérateur ne peut pas encaisser un déblocage de contact dans une zone qui n'a pas encore assez de profils travailleurs actifs ; un travailleur inscrit dans une telle zone voit un message honnête sur l'état de la recherche plutôt qu'une fausse promesse de visibilité.
-**FRs couvertes :** FR-8, FR-9, FR-16
+**FRs couvertes :** FR-8, FR-9, FR-16 (+ le signal de densité de FR-1, Story 4.3)
 **Notes d'implémentation :** dépend de l'existence du mécanisme de déblocage (Epic 3) — le blocage s'applique au moment de l'encaissement. La valeur du seuil lui-même reste une question ouverte du PRD (§11 #FR-8/FR-9), à observer une fois des inscriptions réelles accumulées.
 
 ### Epic 5: Mesurer le pilote
@@ -289,6 +289,20 @@ So that je ne me fasse pas de fausses idées sur mes chances d'être contacté.
 **Then** un message honnête indique que la recherche n'est pas encore active dans sa zone, plutôt qu'une promesse de visibilité immédiate (FR-16)
 **And** ce statut se met à jour automatiquement dès que la zone franchit le seuil — aucune ressaisie manuelle par l'opérateur
 **Notes d'implémentation :** ceci ajoute une information sur `profil-public.php`, ce n'est pas la contrainte NFR3 (« ne pas ajouter de masquage de numéro ») qui reste inchangée — un statut de zone n'est pas un masquage de contact.
+
+### Story 4.3: Signal de densité au moment de la recherche
+
+As a employeur cherchant en ligne,
+I want savoir dès la recherche si ma zone n'a pas encore assez de profils, plutôt qu'au moment de payer,
+So that je ne me déplace pas en cybercafé pour découvrir un blocage que la recherche aurait pu m'éviter.
+
+**Acceptance Criteria:**
+
+**Given** une recherche sur `recherche.php` (Epic 1, Story 1.3) dont la zone est sous le seuil de densité
+**When** les résultats s'affichent (avec ou sans profil trouvé)
+**Then** un message informationnel l'indique clairement — même formulation que le statut travailleur de la Story 4.2, pas un blocage de la recherche elle-même (FR-1, troisième conséquence testable)
+**And** ce message réutilise le même seuil et le même calcul de comptage par zone que la Story 4.1 — pas une deuxième logique de seuil à maintenir en parallèle
+**Notes d'implémentation :** identifié comme orphelin lors du sprint planning (2026-08-21) — le PRD (§4.1) l'exige explicitement, `recherche.php` n'était touché par aucune story d'Epic 4 avant celle-ci. Ferme le Finding 2 de la revue adversariale du PRD (contradiction UJ-1/FR-8 : l'employeur ne devait pas découvrir le blocage seulement au paiement).
 
 ## Epic 5: Mesurer le pilote
 
