@@ -6,12 +6,16 @@
 // Express qui correspondent — contact masqué : jamais le numéro complet ni le
 // CIN dans cette page (FR-2, FR-12).
 //
-// Le déblocage de contact (FR-5/FR-6/FR-7, encaissement en cybercafé) n'est
-// pas encore construit — volontairement laissé pour une étape suivante, voir
-// le PRD §4.3. Cette page ne fait que montrer qui est disponible.
+// Le déblocage de contact (FR-5/FR-6/FR-7, Story 3.2) se fait exclusivement
+// depuis l'écran opérateur de cette même page, via debloquer-contact.php —
+// jamais de numéro dans le HTML tant que l'encaissement n'est pas confirmé
+// (voir la boucle de résultats plus bas).
 
 require_once __DIR__ . '/session.php';
 require_once __DIR__ . '/bdd.php';
+require_once __DIR__ . '/constantes-express.php';
+
+$labelPrixDeblocage = number_format(PRIX_DEBLOCAGE_AR, 0, ',', ' ') . ' Ar';
 
 // Recherche assistée par l'opérateur (FR-4, Story 3.1) : réutilise cette même
 // page — pas de page distincte — pour un opérateur avec une session active.
@@ -58,6 +62,7 @@ if ($aRecherche) {
         // Résultat volontairement minimal : prénom, métier, zone, rayon.
         // Ne jamais ajouter telephone ni cin_numero ici (FR-2, FR-12).
         $resultats[] = [
+            'id'          => (int)$ligne['id'],
             'prenom'      => trim($pers['prenom'] ?? ''),
             'zone'        => $ligne['zone'],
             'rayonLabel'  => $rayon >= 99 ? 'Plus de 10 km' : $rayon . ' km',
@@ -104,7 +109,7 @@ if ($aRecherche) {
   .liste-resultats { display: flex; flex-direction: column; gap: var(--e-3); }
   .resultat {
     display: flex; align-items: center; justify-content: space-between;
-    gap: var(--e-3); padding: var(--e-4);
+    flex-wrap: wrap; gap: var(--e-3); padding: var(--e-4);
   }
   .resultat__identite { display: flex; align-items: center; gap: var(--e-3); }
   .resultat__avatar {
@@ -130,6 +135,12 @@ if ($aRecherche) {
 
   .lien-retour { text-decoration: underline; text-underline-offset: 2px; }
   .lien-retour:hover { color: var(--c-bleu); }
+
+  .resultat__deblocage { flex-shrink: 0; }
+  .resultat__telephone {
+    font-weight: 700; color: var(--c-bleu); font-size: var(--t-m);
+    white-space: nowrap; text-decoration: underline;
+  }
 </style>
 </head>
 <body class="page">
@@ -196,6 +207,11 @@ if ($aRecherche) {
               </div>
             </div>
             <div class="resultat__distance"><?= $r['distanceKm'] == (int)$r['distanceKm'] ? (int)$r['distanceKm'] : $r['distanceKm'] ?> km</div>
+            <?php if ($estOperateur): ?>
+              <div class="resultat__deblocage" data-cv-id="<?= $r['id'] ?>">
+                <button type="button" class="btn btn--principal btn--compact btn-debloquer">Débloquer — <?= htmlspecialchars($labelPrixDeblocage) ?></button>
+              </div>
+            <?php endif; ?>
           </div>
         <?php endforeach; ?>
       </div>
@@ -208,6 +224,52 @@ if ($aRecherche) {
 
   </div>
 </main>
+
+<script>
+const labelPrixDeblocage = <?= json_encode($labelPrixDeblocage, JSON_UNESCAPED_UNICODE) ?>;
+
+document.querySelectorAll('.btn-debloquer').forEach(function (bouton) {
+  bouton.addEventListener('click', function () {
+    if (!confirm('Confirmer que les ' + labelPrixDeblocage + ' ont été encaissés et révéler le numéro ?')) {
+      return;
+    }
+    const conteneur = bouton.closest('.resultat__deblocage');
+    const cvId = conteneur.dataset.cvId;
+    bouton.disabled = true;
+    bouton.textContent = 'Encaissement…';
+    fetch('debloquer-contact.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cv_id: cvId })
+    })
+      .then(function (reponse) { return reponse.json().then(function (data) { return { ok: reponse.ok, data: data }; }); })
+      .then(function (resultat) {
+        if (!resultat.ok) {
+          alert(resultat.data.erreur || "Impossible de débloquer ce contact.");
+          bouton.disabled = false;
+          bouton.textContent = 'Débloquer — ' + labelPrixDeblocage;
+          return;
+        }
+        // Construit via DOM (jamais innerHTML) : le numéro vient d'un champ
+        // saisi librement à l'inscription (FR-17, pas de validation de
+        // format), donc potentiellement hostile. Le href tel: est réduit
+        // aux chiffres et au + (même règle que profil-public.php) car un
+        // format libre ("034.../033... ") casserait l'appel en un clic ;
+        // le texte affiché, lui, reste tel quel via textContent.
+        const lien = document.createElement('a');
+        lien.className = 'resultat__telephone';
+        lien.href = 'tel:' + resultat.data.telephone.replace(/[^0-9+]/g, '');
+        lien.textContent = resultat.data.telephone;
+        conteneur.replaceChildren(lien);
+      })
+      .catch(function () {
+        alert("Impossible de débloquer ce contact. Vérifiez votre connexion.");
+        bouton.disabled = false;
+        bouton.textContent = 'Débloquer — ' + labelPrixDeblocage;
+      });
+  });
+});
+</script>
 
 </body>
 </html>

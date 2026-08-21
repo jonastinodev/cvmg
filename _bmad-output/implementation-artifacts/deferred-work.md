@@ -25,3 +25,11 @@
 - source_spec: none
   summary: Story 3.3 — Instruction de déblocage sur la recherche en ligne (afficher le prix fixe 10 000 Ar et l'instruction "se rendre au cybercafé" sur chaque résultat de recherche.php pour l'employeur en ligne)
   evidence: Même scission que ci-dessus (checkpoint multi-objectifs de step-01, Epic 3). Story 3.3 est indépendante de 3.1/3.2 côté implémentation (touche uniquement recherche.php côté affichage) mais reportée pour garder un seul cycle plan→implémentation→revue à la fois.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-3-2-encaissement-et-revelation-du-numero.md`
+  summary: "`debloquer-contact.php` n'a aucune protection contre les doublons : un rafraîchissement de page après un déblocage réussi réaffiche le bouton « Débloquer » (l'état révélé n'est jamais persisté), donc un second clic sans nouvel encaissement réel insère une deuxième ligne dans `deblocages` — corrompt la réconciliation du chiffre d'affaires si ça se reproduit souvent en usage réel."
+  evidence: Trouvé par la revue Blind Hunter en step-oneshot de la Story 3.2. Non requis par l'AC de la Story 3.2 (epics.md) — corriger correctement demande une décision produit (qu'est-ce qu'un « doublon légitime » vs accidentel, sachant qu'aucune identité employeur n'existe pour distinguer deux vraies transactions successives sur le même profil) plutôt qu'un patch mécanique.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-3-2-encaissement-et-revelation-du-numero.md`
+  summary: Une fois révélé, le numéro reste affiché indéfiniment à l'écran de l'opérateur (pas de masquage automatique après un délai, pas de nettoyage à la navigation) — risque si le poste du cybercafé est partagé entre opérateurs/employeurs successifs sans rafraîchir la page entre deux.
+  evidence: Trouvé par la revue Blind Hunter en step-oneshot de la Story 3.2. Hors AC (qui exige seulement l'absence de pré-affichage, pas de masquage après coup) ; une temporisation ou un nettoyage à la navigation demande un arbitrage produit sur la durée raisonnable avant de coder quoi que ce soit.
