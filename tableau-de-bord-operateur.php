@@ -13,7 +13,7 @@ $nomOperateur = $_SESSION['utilisateur_nom'] ?? '';
 // Avant cette migration, la requête échoue et on affiche une liste vide.
 try {
     $stmt = $pdo->prepare(
-        'SELECT id, titre, date_creation, donnees_json
+        'SELECT id, titre, date_creation, donnees_json, suppression_demandee_le
          FROM cv
          WHERE utilisateur_id = :uid AND type = :type
          ORDER BY date_creation DESC'
@@ -97,6 +97,19 @@ function dateRelativeTdb(string $dateSql): string {
   td.lien  { white-space: nowrap; }
   td.lien a { color: var(--bleu); font-weight: 500; font-size: 12.5px; }
   td.lien a:hover { text-decoration: underline; }
+  td.action { white-space: nowrap; }
+  .btn-supprimer {
+    background: none; border: 1px solid #D64545; color: #D64545;
+    font: inherit; font-size: 12px; font-weight: 600;
+    padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: background .15s;
+  }
+  .btn-supprimer:hover { background: #FDEDED; }
+  .btn-supprimer:disabled { opacity: .6; cursor: not-allowed; }
+  .badge-supprime {
+    display: inline-block; font-size: 11.5px; font-weight: 600; color: var(--gris);
+    background: var(--fond); border: 1px solid var(--bordure);
+    padding: 5px 10px; border-radius: 6px;
+  }
 
   /* ── état vide ── */
   .vide { text-align: center; padding: 60px 20px; color: var(--gris); }
@@ -143,6 +156,7 @@ function dateRelativeTdb(string $dateSql): string {
             <th>Métier</th>
             <th>Créé</th>
             <th>Lien public</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -153,8 +167,9 @@ function dateRelativeTdb(string $dateSql): string {
             $metier     = htmlspecialchars($personnel['titre_professionnel'] ?? '—');
             $dateAff    = dateRelativeTdb($cv['date_creation']);
             $dateTip    = date('d/m/Y H:i', strtotime($cv['date_creation']));
+            $suppressionDemandeeLe = $cv['suppression_demandee_le'] ?? null;
           ?>
-          <tr>
+          <tr data-cv-id="<?= (int)$cv['id'] ?>">
             <td class="nom"><?= htmlspecialchars($nomComplet) ?></td>
             <td class="metier"><?= $metier ?></td>
             <td class="date" title="<?= $dateTip ?>"><?= $dateAff ?></td>
@@ -163,6 +178,15 @@ function dateRelativeTdb(string $dateSql): string {
                 Voir le profil →
               </a>
             </td>
+            <td class="action">
+              <?php if ($suppressionDemandeeLe): ?>
+                <span class="badge-supprime">Suppression demandée le <?= htmlspecialchars(date('d/m/Y', strtotime($suppressionDemandeeLe))) ?></span>
+              <?php else: ?>
+                <button type="button" class="btn-supprimer" data-cv-id="<?= (int)$cv['id'] ?>">
+                  Demander la suppression
+                </button>
+              <?php endif; ?>
+            </td>
           </tr>
           <?php endforeach; ?>
         </tbody>
@@ -170,6 +194,38 @@ function dateRelativeTdb(string $dateSql): string {
     </div>
   <?php endif; ?>
 </main>
+
+<script>
+document.querySelectorAll('.btn-supprimer').forEach(function (bouton) {
+  bouton.addEventListener('click', function () {
+    if (!confirm('Confirmer la demande de suppression de ce profil ? Il disparaîtra immédiatement de la recherche et de la fiche publique.')) {
+      return;
+    }
+    const cvId = bouton.dataset.cvId;
+    bouton.disabled = true;
+    fetch('demander-suppression-cv.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cv_id: cvId })
+    })
+      .then(function (reponse) { return reponse.json().then(function (data) { return { ok: reponse.ok, data: data }; }); })
+      .then(function (resultat) {
+        if (!resultat.ok) {
+          alert(resultat.data.erreur || "Impossible d'enregistrer la demande de suppression.");
+          bouton.disabled = false;
+          return;
+        }
+        const cellule = bouton.closest('td');
+        const dateAff = resultat.data.date;
+        cellule.innerHTML = '<span class="badge-supprime">Suppression demandée le ' + dateAff + '</span>';
+      })
+      .catch(function () {
+        alert("Impossible d'enregistrer la demande de suppression. Vérifiez votre connexion.");
+        bouton.disabled = false;
+      });
+  });
+});
+</script>
 
 </body>
 </html>

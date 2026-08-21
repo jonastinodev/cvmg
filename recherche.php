@@ -36,6 +36,8 @@ if ($aRecherche) {
          WHERE zd.zone_depart = :zoneRecherchee
            AND cv.titre = :metier
            AND cv.type = \'express\' AND cv.est_public = 1
+           AND cv.consentement_horodatage IS NOT NULL
+           AND cv.suppression_demandee_le IS NULL
            AND zd.distance_km <= cv.rayon_km
          ORDER BY zd.distance_km ASC, cv.date_creation DESC'
     );

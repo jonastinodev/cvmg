@@ -22,7 +22,7 @@ if ($id <= 0) {
     $stmt = bdd()->prepare(
         'SELECT donnees_json, rayon_km, date_creation
          FROM cv
-         WHERE id = :id AND est_public = 1'
+         WHERE id = :id AND est_public = 1 AND suppression_demandee_le IS NULL'
     );
     $stmt->execute([':id' => $id]);
     $ligne = $stmt->fetch(PDO::FETCH_ASSOC);

@@ -43,6 +43,13 @@ if ($metier === '')     repondreErreur('Le métier est obligatoire.');
 if ($zone === '')       repondreErreur('La sous-zone est obligatoire.');
 if ($rayon === null)    repondreErreur('Le rayon est obligatoire.');
 
+// --- Consentement du travailleur (Story 2.1) ---
+// Vérifié côté serveur car le client peut être contourné ; jamais déduit
+// d'une simple absence d'erreur côté formulaire.
+if (($entree['consentement'] ?? false) !== true) {
+    repondreErreur('Le consentement du travailleur doit être confirmé avant publication.', 400);
+}
+
 // --- Validation de la zone contre la liste canonique (architecture AD-4) ---
 // Un nom qui ne correspond pas exactement à zones.json romprait silencieusement
 // le JOIN de la future recherche employeur (accent, casse ou espace différent).
@@ -83,9 +90,9 @@ $donnees = [
 $pdo  = bdd();
 $stmt = $pdo->prepare(
     'INSERT INTO cv
-       (utilisateur_id, titre, donnees_json, date_creation, date_maj, type, rayon_km, est_public, zone)
+       (utilisateur_id, titre, donnees_json, date_creation, date_maj, type, rayon_km, est_public, zone, consentement_horodatage)
      VALUES
-       (:uid, :titre, :donnees, NOW(), NOW(), :type, :rayon, 1, :zone)'
+       (:uid, :titre, :donnees, NOW(), NOW(), :type, :rayon, 1, :zone, NOW())'
 );
 $stmt->execute([
     ':uid'    => (int)$_SESSION['utilisateur_id'],

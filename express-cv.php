@@ -170,6 +170,24 @@ $zones   = json_decode(file_get_contents(__DIR__ . '/zones.json')   ?: '[]', tru
   .resume-cle  { font-size: 10pt; color: var(--gris); font-weight: 500; flex-shrink: 0; }
   .resume-val  { font-size: 12pt; font-weight: 600; color: var(--texte); text-align: right; }
 
+  /* ── CONSENTEMENT ───────────────────────────────────── */
+  #zone-consentement {
+    background: var(--orange-clair); border: 1.5px solid var(--orange);
+    border-radius: 12px; padding: 16px 18px; margin-bottom: 18px;
+  }
+  #texte-consentement {
+    font-size: 10.5pt; color: var(--texte); line-height: 1.55;
+    margin-bottom: 12px;
+  }
+  #label-consentement {
+    display: flex; align-items: flex-start; gap: 10px;
+    cursor: pointer; font-size: 10.5pt; font-weight: 600; color: var(--bleu-marine);
+  }
+  #chk-consentement {
+    width: 20px; height: 20px; flex-shrink: 0; margin-top: 1px;
+    accent-color: var(--orange); cursor: pointer;
+  }
+
   #btn-publier {
     width: 100%; padding: 18px;
     background: var(--orange); color: #fff;
@@ -378,6 +396,17 @@ $zones   = json_decode(file_get_contents(__DIR__ . '/zones.json')   ?: '[]', tru
       <div class="resume-ligne"><span class="resume-cle">Rayon</span><span id="res-rayon" class="resume-val"></span></div>
     </div>
 
+    <!-- Consentement du travailleur (Story 2.1) — à lire à voix haute -->
+    <div id="zone-consentement">
+      <p id="texte-consentement">
+        « Votre profil va être visible par des employeurs qui cherchent quelqu'un pour votre métier, dans votre zone. Ils verront votre prénom, votre métier et votre zone — jamais votre numéro de téléphone ni votre carte d'identité. Pour vous contacter, ils devront passer par un cybercafé partenaire. Êtes-vous d'accord ? »
+      </p>
+      <label id="label-consentement" for="chk-consentement">
+        <input type="checkbox" id="chk-consentement">
+        <span>Le client a entendu ces informations et accepte que son profil soit visible en recherche.</span>
+      </label>
+    </div>
+
     <!-- Zone résultat après publication — logique injectée tâches #16-19 -->
     <div id="zone-resultat"></div>
 
@@ -508,6 +537,11 @@ async function soumettreExpress() {
   const btn    = document.getElementById('btn-publier');
   const statut = document.getElementById('statut-publication');
 
+  if (!document.getElementById('chk-consentement').checked) {
+    alert('Le consentement du travailleur doit être confirmé avant de publier le profil.');
+    return;
+  }
+
   btn.disabled = true;
   btn.textContent = '⏳ Publication en cours…';
   statut.textContent = '';
@@ -525,6 +559,7 @@ async function soumettreExpress() {
         metier:    express.metier,
         zone:      express.zone,
         rayon:     express.rayon,
+        consentement: true,
       }),
     });
     const data = await res.json().catch(() => null);
