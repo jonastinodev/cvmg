@@ -94,15 +94,18 @@ $metiers = json_decode(file_get_contents(__DIR__ . '/metiers.json') ?: '[]', tru
   }
   .requis    { color: var(--orange); }
   .facultatif { color: #9CA3AF; font-weight: 400; }
+  .aide-champ { margin-top: 6px; font-size: 9pt; color: var(--gris); }
 
-  .champ-groupe input[type=text] {
+  .champ-groupe input[type=text],
+  .champ-groupe input[type=tel] {
     width: 100%; padding: 14px 16px;
     border: 1.5px solid var(--bordure); border-radius: 10px;
     font-size: 15pt; font-family: inherit; color: var(--texte);
     background: var(--blanc);
     transition: border-color .15s;
   }
-  .champ-groupe input[type=text]:focus {
+  .champ-groupe input[type=text]:focus,
+  .champ-groupe input[type=tel]:focus {
     outline: none; border-color: var(--orange);
     box-shadow: 0 0 0 3px rgba(217,119,6,.15);
   }
@@ -302,6 +305,11 @@ $metiers = json_decode(file_get_contents(__DIR__ . '/metiers.json') ?: '[]', tru
       <input type="text" id="exp-prenom" autocomplete="given-name" placeholder="Ex : Jean">
     </div>
     <div class="champ-groupe">
+      <label for="exp-telephone">Téléphone <span class="requis">*</span></label>
+      <input type="tel" id="exp-telephone" autocomplete="tel" inputmode="tel" placeholder="Ex : 034 12 345 67">
+      <p class="aide-champ">L'employeur appellera ce numéro — c'est le seul moyen d'être contacté.</p>
+    </div>
+    <div class="champ-groupe">
       <label for="exp-cin">Numéro CIN <span class="facultatif">(facultatif)</span></label>
       <input type="text" id="exp-cin" inputmode="numeric" placeholder="Ex : 101 234 567 890">
     </div>
@@ -353,6 +361,7 @@ $metiers = json_decode(file_get_contents(__DIR__ . '/metiers.json') ?: '[]', tru
 
     <div id="resume">
       <div class="resume-ligne"><span class="resume-cle">Nom complet</span><span id="res-nom" class="resume-val"></span></div>
+      <div class="resume-ligne"><span class="resume-cle">Téléphone</span><span id="res-telephone" class="resume-val"></span></div>
       <div class="resume-ligne"><span class="resume-cle">CIN</span><span id="res-cin" class="resume-val"></span></div>
       <div class="resume-ligne"><span class="resume-cle">Métier</span><span id="res-metier" class="resume-val"></span></div>
       <div class="resume-ligne"><span class="resume-cle">Rayon</span><span id="res-rayon" class="resume-val"></span></div>
@@ -378,7 +387,7 @@ const NB_ECRANS    = 4;
 const POURCENTAGES = [25, 50, 75, 100];
 
 // ── ÉTAT ───────────────────────────────────────────────────────
-let express = { nom: '', prenom: '', cin: '', metier: '', rayon: null };
+let express = { nom: '', prenom: '', telephone: '', cin: '', metier: '', rayon: null };
 let ecranActuel = 1;
 
 // ── NAVIGATION ─────────────────────────────────────────────────
@@ -404,11 +413,16 @@ function afficherEcran(n) {
 
 function validerEcran(n) {
   if (n === 1) {
-    express.nom    = document.getElementById('exp-nom').value.trim();
-    express.prenom = document.getElementById('exp-prenom').value.trim();
-    express.cin    = document.getElementById('exp-cin').value.trim();
+    express.nom       = document.getElementById('exp-nom').value.trim();
+    express.prenom    = document.getElementById('exp-prenom').value.trim();
+    express.telephone = document.getElementById('exp-telephone').value.trim();
+    express.cin       = document.getElementById('exp-cin').value.trim();
     if (!express.nom || !express.prenom) {
       alert('Merci d\'indiquer le nom et le prénom.');
+      return false;
+    }
+    if (!express.telephone) {
+      alert('Le numéro de téléphone est obligatoire — c\'est le seul moyen pour un employeur de contacter la personne.');
       return false;
     }
   }
@@ -486,11 +500,12 @@ async function soumettreExpress() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        nom:    express.nom,
-        prenom: express.prenom,
-        cin:    express.cin,
-        metier: express.metier,
-        rayon:  express.rayon,
+        nom:       express.nom,
+        prenom:    express.prenom,
+        telephone: express.telephone,
+        cin:       express.cin,
+        metier:    express.metier,
+        rayon:     express.rayon,
       }),
     });
     const data = await res.json().catch(() => null);
@@ -535,6 +550,7 @@ document.getElementById('btn-publier').addEventListener('click', soumettreExpres
 function remplirResume() {
   document.getElementById('res-nom').textContent =
     [express.nom, express.prenom].filter(Boolean).join(' ') || '—';
+  document.getElementById('res-telephone').textContent = express.telephone || '—';
   document.getElementById('res-cin').textContent = express.cin || '—';
   document.getElementById('res-metier').textContent = express.metier || '—';
   document.getElementById('res-rayon').textContent =

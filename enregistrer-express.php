@@ -28,19 +28,21 @@ if (!is_array($entree)) {
     repondreErreur('Corps de requête JSON invalide.');
 }
 
-$nom    = trim($entree['nom']    ?? '');
-$prenom = trim($entree['prenom'] ?? '');
-$cin    = trim($entree['cin']    ?? '');
-$metier = trim($entree['metier'] ?? '');
-$rayon  = isset($entree['rayon']) ? (int)$entree['rayon'] : null;
+$nom       = trim($entree['nom']       ?? '');
+$prenom    = trim($entree['prenom']    ?? '');
+$telephone = trim($entree['telephone'] ?? '');
+$cin       = trim($entree['cin']       ?? '');
+$metier    = trim($entree['metier']    ?? '');
+$rayon     = isset($entree['rayon']) ? (int)$entree['rayon'] : null;
 
 if ($nom === '')        repondreErreur('Le nom est obligatoire.');
 if ($prenom === '')     repondreErreur('Le prénom est obligatoire.');
+if ($telephone === '')  repondreErreur('Le téléphone est obligatoire — sans lui, un employeur ne peut pas contacter la personne.');
 if ($metier === '')     repondreErreur('Le métier est obligatoire.');
 if ($rayon === null)    repondreErreur('Le rayon est obligatoire.');
 
 // --- Construction du donnees_json (même structure que le CV complet) ---
-// Les champs absents (téléphone, email…) restent vides : profil-public.php
+// Les champs encore absents (email…) restent vides : profil-public.php
 // les affichera uniquement s'ils sont renseignés.
 $donnees = [
     'modele' => 'classique',
@@ -50,7 +52,7 @@ $donnees = [
         'titre_professionnel' => $metier,
         'cin_numero'          => $cin,
         'profil_court'        => '',
-        'telephone'           => '',
+        'telephone'           => $telephone,
         'email'               => '',
         'ville'               => '',
         'adresse'             => '',
